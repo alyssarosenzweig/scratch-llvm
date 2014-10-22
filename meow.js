@@ -4,12 +4,12 @@ with JSON serialization support
 */
 
 function Meow() {
-
+	this.scripts = [];
 }
 
 Meow.prototype.serialize = function() {
 	// I extracted this from the Scratch Wiki; when it breaks, you can blame veggie
-	
+
 	return
 		{
 		    "objName": "Stage",
@@ -25,6 +25,7 @@ Meow.prototype.serialize = function() {
 		    "penLayerMD5": "279467d0d49e152706ed66539b577c00.png",
 		    "tempoBPM": 60,
 		    "videoAlpha": 0.5,
+		    "scripts" : this.scripts
 		    "children": [],
 		    "info": {
 		        "scriptCount": 0,
@@ -37,6 +38,20 @@ Meow.prototype.serialize = function() {
 		        "hasCloudData": false
 		    }
 		}
+}
+
+Meow.prototype.addScript = function(blocks) {
+	this.scripts.push(new ScriptTuple(blocks, 0, 0));
+}
+
+function ScriptTuple(blocks, x, y) {
+	this.blocks = blocks || [];
+	this.x = x || 0;
+	this.y = y || 0;
+}
+
+ScriptTuple.prototype.toJSON = function() {
+	return [this.x, this.y, this.blocks];
 }
 
 module.exports = function() {
