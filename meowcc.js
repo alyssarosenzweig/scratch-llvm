@@ -7,4 +7,7 @@ var meowcc = (require("./meow"))();
 
 console.log(IR);
 
-console.log(meowcc.serialize());
+meowcc.addScript([
+		"sqrt", 9
+	]);
+console.log(JSON.stringify(meowcc.serialize()));
