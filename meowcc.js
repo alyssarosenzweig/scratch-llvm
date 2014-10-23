@@ -6,6 +6,8 @@ var IR = (require('./IR'))( process.argv[2]);
 var meow = (require("./meow"))();
 var backend = require("./backend");
 
+console.log(JSON.stringify(IR));
+
 for(var i = 0; i < IR.functions.length; ++i) {
 	meow.addScript(backend.compileFunction(IR.functions[i]));
 }

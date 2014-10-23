@@ -30,6 +30,26 @@ module.exports.compileFunction = function(func) {
 		if(func.code[i].type == "call") {
 			// calling a (potentially foreign) function
 			// stub
+
+			console.log(func.code[i]);
+
+			var spec = func.code[i].funcName;
+			var args = [];
+
+
+			for(var a = 0; a < func.code[i].paramList.length; ++a) {
+				args.push(formatValue(func.code[i].paramList[a][0], func.code[i].paramList[a][1]));
+				spec += " "+specifierForType(func.code[i].paramList[a][0]);
+			}
+
+
+
+			blockList.push(
+				[
+					"call",
+					spec
+				].concat(args)
+			)
 		}
 	}
 
@@ -45,4 +65,9 @@ function defaultForType(type) {
 // fixme: stub
 function specifierForType(type) {
 	return "%s";
+}
+
+// fixme: stub
+function formatValue(type, value) { 
+	return value;
 }
