@@ -2,7 +2,13 @@
 front-end to the compiler
 */
 
-var IR = (require('./IR'))( process.argv[2]);
+var IR = (require('./IR'))(
+	{
+		filename: process.argv[2],
+		ffi: ["@putch"]
+	}
+);
+
 var meow = (require("./meow"))();
 var backend = require("./backend");
 

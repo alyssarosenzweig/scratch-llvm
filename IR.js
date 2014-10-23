@@ -9,12 +9,12 @@ var regexs = {
 	call: /\s*call ([^ ]+) ([^\(]+)\((.+)/
 }
 
-function parse(file) {
+function parse(file, ffi) {
 	// strip out some really useless fields
 	// if this turns out to be useful in the future
 	// (aka I just broke something)
 	// poke me
-	
+
 	file = file.replace("zeroext ", "");
 	file = file.replace("signext ", "");
 
@@ -51,15 +51,20 @@ function parse(file) {
 				var funcName = m[2];
 				var paramList = extractParamList(m[3]);
 
-				// TODO: stub
+				codeBlock = [];
+
+				if(ffi.indexOf(funcName) > -1) {
+					codeBlock = [{
+						type: "ffi",
+						ffiBlock: funcName
+					}];
+				}
 
 				mod.functions.push({
 					returnType: returnType,
 					paramList: paramList,
 					funcName: funcName,
-					code: [
-
-					]
+					code: codeBlock
 				})
 
 				console.log(m);
@@ -130,6 +135,6 @@ function extractParamList(params) {
 	return formattedParams;
 }
 
-module.exports = function(filename) {
-	return parse(fs.readFileSync(filename).toString());
+module.exports = function(options) {
+	return parse(fs.readFileSync(options.filename).toString(), options.ffi || []);
 }
