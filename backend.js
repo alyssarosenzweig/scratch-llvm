@@ -24,6 +24,10 @@ module.exports.compileFunction = function(func) {
 
 	blockList.push(["procDef", spec, inputs, defaults, false]);
 
+	for(var i = 0; i < func.code.length; ++i) {
+		console.log(func.code[i]);
+	}
+
 	return blockList;
 }
 

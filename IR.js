@@ -53,14 +53,38 @@ function parse(file) {
 
 				var returnType = m[1];
 				var funcName = m[2];
-				var paramList = m[3].slice(0,-1).split(",");
+				var paramList = m[3];
+				var params = [];
+
+				// due to the shear complexity of IR, we have to manually parse
+				var p = 0;
+				var temp = "";
+
+				var paranDepth = 0;
+
+				while(p < paramList.length) {
+					if(paranDepth == 0 && (paramList[p] == ',' || paramList[p] == ')')) {
+						params.push(temp);
+						temp = "";
+					} else {
+						temp += paramList[p];
+
+						if(paramList[p] == "(") {
+							paranDepth++;
+						} else if(paramList[p] == ")") {
+							paranDepth--;
+						}
+					}
+
+					++p;
+				}
 
 				functionBlock.code.push(
 				{
 					type: "call",
 					returnType: returnType,
 					funcName: funcName,
-					paramList: paramList
+					paramList: params
 				})
 			}
 		}
