@@ -10,6 +10,14 @@ var regexs = {
 }
 
 function parse(file) {
+	// strip out some really useless fields
+	// if this turns out to be useful in the future
+	// (aka I just broke something)
+	// poke me
+	
+	file = file.replace("zeroext ", "");
+	file = file.replace("signext ", "");
+
 	var lines = file.split('\n');
 
 	var mod = {
