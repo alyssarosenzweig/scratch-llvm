@@ -13,7 +13,7 @@ var meow = (require("./meow"))();
 var backend = require("./backend");
 
 backend.ffi["@putch"] = [
-	//["doAsk", ["concatenate:with:", "@putch ", ["getParam", 1]]]
+	["doAsk", ["concatenate:with:", "@putch ", ["getParam", "param0", "r"]]]
 ];
 
 console.log(JSON.stringify(IR));

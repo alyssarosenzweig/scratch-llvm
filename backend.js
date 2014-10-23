@@ -55,7 +55,7 @@ module.exports.compileFunction = function(func) {
 		} else if(func.code[i].type == "ffi") {
 			// FFI block
 			// load the code from the options
-			blockList.concat(module.exports.ffi[func.code[i].ffiBlock]);
+			blockList = blockList.concat(module.exports.ffi[func.code[i].ffiBlock]);
 		}
 	}
 
