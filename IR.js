@@ -79,6 +79,12 @@ function parse(file) {
 					++p;
 				}
 
+				for(var j = 0; j < params.length; ++j) {
+					var type = params[j].split(' ')[0];
+					var val = params[j].slice(type.length+1);
+					params[j] = [type, val];
+				}
+
 				functionBlock.code.push(
 				{
 					type: "call",
