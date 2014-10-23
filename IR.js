@@ -4,6 +4,7 @@ var fs = require('fs');
 
 var regexs = {
 	define: /define ([^ ]+) ([^\(]+)\(([^\)]*)\)([^{]+){/,
+	declare: /declare ([^ ]+) ([^\(]+)([^\)]+)\)/,
 
 	call: /\s*call ([^ ]+) ([^\(]+)\((.+)/
 }
@@ -28,20 +29,32 @@ function parse(file) {
 				var paramList = m[3];
 				var modifiers = m[4];
 
-				var params = paramList.split(',');
-				var formattedParams = [];
-				for(var j = 0; j < params.length; ++j) {
-					if(params[j].length)
-						formattedParams.push( params[j].trim().split(' ') );
-				}
-
 				functionBlock = {
 					returnType: returnType,
-					paramList: formattedParams,
+					paramList: extractParamList(paramList),
 					funcName: funcName,
 					code: []
 				};
 				inFunctionBlock = true;
+			} else if(regexs.declare.test(lines[i])) {
+				var m = lines[i].match(regexs.declare);
+
+				var returnType = m[1];
+				var funcName = m[2];
+				var paramList = extractParamList(m[3]);
+
+				// TODO: stub
+
+				mod.functions.push({
+					returnType: returnType,
+					paramList: paramList,
+					funcName: funcName,
+					code: [
+
+					]
+				})
+
+				console.log(m);
 			}
 		} else {
 			if(lines[i] == "}") {
@@ -97,6 +110,16 @@ function parse(file) {
 	}
 
 	return mod;
+}
+
+function extractParamList(params) {
+	var params = params.split(',');
+	var formattedParams = [];
+	for(var j = 0; j < params.length; ++j) {
+		if(params[j].length)
+			formattedParams.push( params[j].trim().split(' ') );
+	}
+	return formattedParams;
 }
 
 module.exports = function(filename) {
