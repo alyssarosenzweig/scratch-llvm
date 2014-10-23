@@ -26,6 +26,10 @@ module.exports.compileFunction = function(func) {
 
 	for(var i = 0; i < func.code.length; ++i) {
 		console.log(func.code[i]);
+		if(code[i].type == "call") {
+			// calling a (potentially foreign) function
+			// stub
+		}
 	}
 
 	return blockList;
