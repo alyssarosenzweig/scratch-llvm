@@ -3,7 +3,9 @@
 var fs = require('fs');
 
 var regexs = {
-	define: /define ([^ ]+) ([^\(]+)\(([^\)]*)\)([^{]+){/
+	define: /define ([^ ]+) ([^\(]+)\(([^\)]*)\)([^{]+){/,
+
+	call: /\s*call ([^ ]+) ([^\(]+)\((.+)/
 }
 
 function parse(file) {
@@ -29,7 +31,8 @@ function parse(file) {
 				var params = paramList.split(',');
 				var formattedParams = [];
 				for(var j = 0; j < params.length; ++j) {
-					formattedParams.push( params[j].trim().split(' ') );
+					if(params[j].length)
+						formattedParams.push( params[j].trim().split(' ') );
 				}
 
 				functionBlock = {
@@ -44,6 +47,21 @@ function parse(file) {
 			if(lines[i] == "}") {
 				mod.functions.push(functionBlock);
 				inFunctionBlock = false;
+			} else if(regexs.call.test(lines[i])) {
+				var m = lines[i].match(regexs.call);
+				console.log(m);
+
+				var returnType = m[1];
+				var funcName = m[2];
+				var paramList = m[3].slice(0,-1).split(",");
+
+				functionBlock.code.push(
+				{
+					type: "call",
+					returnType: returnType,
+					funcName: funcName,
+					paramList: paramList
+				})
 			}
 		}
 	}
