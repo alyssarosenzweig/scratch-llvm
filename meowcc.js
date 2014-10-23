@@ -12,6 +12,11 @@ var IR = (require('./IR'))(
 var meow = (require("./meow"))();
 var backend = require("./backend");
 
+backend.ffi["@putch"] =
+	//["doAsk", ["concatenate:with:", "@putch ", ["getParam", 1]]]
+	["doAsk", "@putch stub"]
+;
+
 console.log(JSON.stringify(IR));
 
 for(var i = 0; i < IR.functions.length; ++i) {

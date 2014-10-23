@@ -1,5 +1,7 @@
 // takes an IR function object and returns a list of Scratch blocks
 
+module.exports.ffi = {};
+
 module.exports.generateFunctionHat = function(func) {
 	var spec = func.funcName;
 	var inputs = [];
@@ -50,6 +52,10 @@ module.exports.compileFunction = function(func) {
 					spec
 				].concat(args)
 			)
+		} else if(func.code[i].type == "ffi") {
+			// FFI block
+			// load the code from the options
+			blockList.push(module.exports.ffi[func.code[i].ffiBlock]);
 		}
 	}
 
