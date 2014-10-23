@@ -1,12 +1,6 @@
 // takes an IR function object and returns a list of Scratch blocks
 
-module.exports.compileFunction = function(func) {
-	console.log("Compiling "+JSON.stringify(func)+"...");
-
-	var blockList = [];
-
-	// add a procdef
-
+module.exports.generateFunctionHat = function(func) {
 	var spec = func.funcName;
 	var inputs = [];
 	var defaults = [];
@@ -22,7 +16,14 @@ module.exports.compileFunction = function(func) {
 	}
 
 
-	blockList.push(["procDef", spec, inputs, defaults, false]);
+	return ["procDef", spec, inputs, defaults, false];
+
+}
+
+module.exports.compileFunction = function(func) {
+	console.log("Compiling "+JSON.stringify(func)+"...");
+
+	var blockList = [module.exports.generateFunctionHat(func)];
 
 	for(var i = 0; i < func.code.length; ++i) {
 		console.log(func.code[i]);
