@@ -14,7 +14,6 @@ var backend = require("./backend");
 
 backend.ffi["@putch"] = [
 	//["doAsk", ["concatenate:with:", "@putch ", ["getParam", 1]]]
-	["doAsk", "@putch stub"]
 ];
 
 console.log(JSON.stringify(IR));

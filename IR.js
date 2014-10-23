@@ -16,6 +16,7 @@ function parse(file, ffi) {
 	// poke me
 
 	file = file.replace("zeroext ", "");
+	file = file.replace(" zeroext", "");
 	file = file.replace("signext ", "");
 
 	var lines = file.split('\n');
