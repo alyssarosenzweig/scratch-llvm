@@ -21,7 +21,7 @@ backend.ffi["@putch"] = [
 					[["setLine:ofList:to:",
 							["lineCountOfList:", "TTY"],
 							"TTY",
-							["concatenate:with:", ["getLine:ofList:", ["lineCountOfList:", "TTY"], "TTY"], ["getParam", "param0", "r"]]]]]
+							["concatenate:with:", ["getLine:ofList:", ["lineCountOfList:", "TTY"], "TTY"], ["letter:of:", ["+", ["getParam", "param0", "r"], 2], ["readVariable", "alphabet"]]]]]]
 ];
 
 console.log(JSON.stringify(IR));
