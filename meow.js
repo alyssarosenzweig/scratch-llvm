@@ -14,7 +14,7 @@ Meow.prototype.serialize = function() {
 	// I extracted this from the Scratch Wiki; when it breaks, you can blame veggie
 
 	return {
-			"lists": [this.lists],
+			"lists": this.lists,
 		    "objName": "Stage",
 		    "costumes": [{
 		            "costumeName": "backdrop1",
@@ -106,6 +106,8 @@ ListTuple.prototype.classicTTY = function() {
 	this.visible = true;
 }
 
-module.exports = function() {
+module.exports.ListTuple = ListTuple;
+
+module.exports.instance = function() {
 	return (new Meow());
 }

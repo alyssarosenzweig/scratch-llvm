@@ -9,14 +9,26 @@ var IR = (require('./IR'))(
 	}
 );
 
-var meow = (require("./meow"))();
+var meow = require("./meow").instance();
 var backend = require("./backend");
 
 backend.ffi["@putch"] = [
-	["doAsk", ["concatenate:with:", "@putch ", ["getParam", "param0", "r"]]]
+	//["doAsk", ["concatenate:with:", "@putch ", ["getParam", "param0", "r"]]]
+
+	["doIfElse",
+					["=", ["getParam", "param0", "r"], "13"],
+					[["append:toList:", "", "TTY"]],
+					[["setLine:ofList:to:",
+							["lineCountOfList:", "TTY"],
+							"TTY",
+							["concatenate:with:", ["getLine:ofList:", ["lineCountOfList:", "TTY"], "TTY"], ["getParam", "param0", "r"]]]]]
 ];
 
 console.log(JSON.stringify(IR));
+
+var tty = new (require("./meow")).ListTuple("TTY");
+tty.classicTTY();
+meow.addList(tty);
 
 for(var i = 0; i < IR.functions.length; ++i) {
 	meow.addScript(backend.compileFunction(IR.functions[i]));
@@ -24,7 +36,12 @@ for(var i = 0; i < IR.functions.length; ++i) {
 
 meow.addScript([
 		["whenGreenFlag"],
+		["call", "init tty"],
 		["call", "@main"] // TODO: argc + argv
+	])
+meow.addScript([
+		["procDef", "init tty", [], [], false],
+		["append:toList:", "", "TTY"]
 	])
 
 if(process.argv[3]) {
