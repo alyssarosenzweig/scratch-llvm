@@ -8,6 +8,7 @@ var http = require('http');
 function Meow() {
 	this.scripts = [];
 	this.lists = [];
+	this.variables = [];
 }
 
 Meow.prototype.serialize = function() {
@@ -15,6 +16,7 @@ Meow.prototype.serialize = function() {
 
 	return {
 			"lists": this.lists,
+			"variables": this.variables,
 		    "objName": "Stage",
 		    "costumes": [{
 		            "costumeName": "backdrop1",
@@ -77,6 +79,10 @@ Meow.prototype.addList = function(tuple) {
 	this.lists.push(tuple);
 }
 
+Meow.prototype.addVariable = function(name, value) {
+	this.variables.push(new VariableTuple(name, value));
+}
+
 function ScriptTuple(blocks, x, y) {
 	this.blocks = blocks || [];
 	this.x = x || 0;
@@ -104,6 +110,12 @@ ListTuple.prototype.classicTTY = function() {
 	this.width = 470;
 	this.height = 350;
 	this.visible = true;
+}
+
+function VariableTuple(name, value) {
+	this.name = name;
+	this.value = value;
+	this.isPersistent = false;
 }
 
 module.exports.ListTuple = ListTuple;

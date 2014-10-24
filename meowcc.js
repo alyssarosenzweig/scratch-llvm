@@ -30,6 +30,20 @@ var tty = new (require("./meow")).ListTuple("TTY");
 tty.classicTTY();
 meow.addList(tty);
 
+var alphabet = "";
+for(var i = 0; i < 256; ++i) {
+	if(i >= 32 && i < 127) {
+		c = String.fromCharCode(i);
+		if(c == "\\" || c == "\"")
+			c = "\\"+c;
+		alphabet += c;
+	} else {
+		alphabet += ".";
+	}
+}
+
+meow.addVariable("alphabet", alphabet);
+
 for(var i = 0; i < IR.functions.length; ++i) {
 	meow.addScript(backend.compileFunction(IR.functions[i]));
 }
