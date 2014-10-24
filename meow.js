@@ -7,12 +7,14 @@ var http = require('http');
 
 function Meow() {
 	this.scripts = [];
+	this.lists = [];
 }
 
 Meow.prototype.serialize = function() {
 	// I extracted this from the Scratch Wiki; when it breaks, you can blame veggie
 
 	return {
+			"lists": [this.lists],
 		    "objName": "Stage",
 		    "costumes": [{
 		            "costumeName": "backdrop1",
@@ -71,6 +73,10 @@ Meow.prototype.addScript = function(blocks) {
 	this.scripts.push(new ScriptTuple(blocks, 0, 0));
 }
 
+Meow.prototype.addList = function(tuple) {
+	this.lists.push(tuple);
+}
+
 function ScriptTuple(blocks, x, y) {
 	this.blocks = blocks || [];
 	this.x = x || 0;
@@ -79,6 +85,25 @@ function ScriptTuple(blocks, x, y) {
 
 ScriptTuple.prototype.toJSON = function() {
 	return [this.x, this.y, this.blocks];
+}
+
+function ListTuple(name) {
+	this.listName = name;
+	this.contents = [];
+	this.isPersistent = false;
+	this.x = 0;
+	this.y = 0;
+	this.width = 0;
+	this.height = 0;
+	this.visible = false;
+}
+
+ListTuple.prototype.classicTTY = function() {
+	this.x = 5;
+	this.y = 5;
+	this.width = 470;
+	this.height = 350;
+	this.visible = true;
 }
 
 module.exports = function() {
