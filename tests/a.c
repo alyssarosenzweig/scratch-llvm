@@ -1,5 +1,6 @@
 void putch(int);
 
 void main() {
-	putch('A');
+	int x = 1;
+	putch('A' + x);
 }

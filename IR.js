@@ -6,7 +6,9 @@ var regexs = {
 	define: /define ([^ ]+) ([^\(]+)\(([^\)]*)\)([^{]+){/,
 	declare: /declare ([^ ]+) ([^\(]+)([^\)]+)\)/,
 
-	call: /\s*call ([^ ]+) ([^\(]+)\((.+)/
+	call: /\s*call ([^ ]+) ([^\(]+)\((.+)/,
+
+	localSet: /\s+%([^ ]+) = (.+)/,
 }
 
 function parse(file, ffi) {
@@ -76,7 +78,6 @@ function parse(file, ffi) {
 				inFunctionBlock = false;
 			} else if(regexs.call.test(lines[i])) {
 				var m = lines[i].match(regexs.call);
-				console.log(m);
 
 				var returnType = m[1];
 				var funcName = m[2];
@@ -119,6 +120,9 @@ function parse(file, ffi) {
 					funcName: funcName,
 					paramList: params
 				})
+			} else if(regexs.localSet.test(lines[i])) {
+				var m = lines[i].match(regexs.localSet);
+				console.log(m);
 			}
 		}
 	}
