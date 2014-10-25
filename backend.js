@@ -32,27 +32,9 @@ module.exports.compileFunction = function(func) {
 		console.log(func.code[i]);
 		if(func.code[i].type == "call") {
 			// calling a (potentially foreign) function
-			// stub
 
-			console.log(func.code[i]);
-
-			var spec = func.code[i].funcName;
-			var args = [];
-
-
-			for(var a = 0; a < func.code[i].paramList.length; ++a) {
-				args.push(formatValue(func.code[i].paramList[a][0], func.code[i].paramList[a][1]));
-				spec += " "+specifierForType(func.code[i].paramList[a][0]);
-			}
-
-
-
-			blockList.push(
-				[
-					"call",
-					spec
-				].concat(args)
-			)
+			blockList = blockList.concat(callBlock(func.code[i]));
+			
 		} else if(func.code[i].type == "ffi") {
 			// FFI block
 			// load the code from the options
@@ -112,4 +94,20 @@ function returnBlock(val) {
 	proc.push(["stopScripts", "this script"]);
 
 	return proc;
+}
+
+function callBlock(block) {
+	var spec = block.funcName;
+	var args = [];
+
+
+	for(var a = 0; a < block.paramList.length; ++a) {
+		args.push(formatValue(block.paramList[a][0], block.paramList[a][1]));
+		spec += " "+specifierForType(block.paramList[a][0]);
+	}
+
+	return [
+			"call",
+			spec
+	];
 }
