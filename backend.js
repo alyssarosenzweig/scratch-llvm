@@ -60,7 +60,7 @@ module.exports.compileFunction = function(func) {
 		}
 	}
 
-	blockList.concat(returnBlock());
+	blockList = blockList.concat(returnBlock());
 
 	return blockList;
 }
