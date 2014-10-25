@@ -33,7 +33,7 @@ module.exports.compileFunction = function(func) {
 		blockList = blockList.concat(compileInstruction(func.code[i]));
 	}
 
-	blockList = blockList.concat(returnBlock());
+	//blockList = blockList.concat(returnBlock());
 
 	return blockList;
 }
@@ -49,7 +49,8 @@ function compileInstruction(block) {
 	} else if(block.type == "set") {
 		return compileInstruction(block.computation)
 				.concat(allocateLocal(block.val));
-
+	} else if(block.type == "ret") {
+		return returnBlock(block.value);
 	}
 }
 
