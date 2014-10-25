@@ -77,3 +77,18 @@ function specifierForType(type) {
 function formatValue(type, value) { 
 	return value;
 }
+
+// higher-level code generation
+function allocateLocal(val) {
+	return [
+		["setLine:ofList:to:", "last", "# of locals", ["+", ["getLine:ofList:", "last", "# of locals"], 1]],
+		["append:toList:", val, "Stack"]]],
+	];
+}
+
+function freeLocals() {
+	return [
+		["doRepeat", ["getLine:ofList:", "last", "# of locals"], [["deleteLine:ofList:", "last", "Stack"]]],
+		["deleteLine:ofList:", "last", "# of locals"]
+	];
+}
