@@ -76,12 +76,20 @@ function parse(file, ffi) {
 			if(lines[i] == "}") {
 				mod.functions.push(functionBlock);
 				inFunctionBlock = false;
-			} else if(regexs.call.test(lines[i])) {
-				callBlock(lines[i].match(regexs.call));
 			} else if(regexs.localSet.test(lines[i])) {
 				var m = lines[i].match(regexs.localSet);
 				console.log(m);
-			}
+
+				if(regexs.call.test(m[2])) {
+					functionBlock.code.push({
+						type: "set",
+						val: ["readVariable", "return value"],
+						computation: callBlock(m[2].match(regexs.call))
+					})
+				}
+			} else if(regexs.call.test(lines[i])) {
+				functionBlock.code.push(callBlock(lines[i].match(regexs.call)));
+			} 
 		}
 	}
 
