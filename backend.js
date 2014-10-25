@@ -46,6 +46,10 @@ function compileInstruction(block) {
 		// FFI block
 		// load the code from the options
 		return module.exports.ffi[block.ffiBlock];
+	} else if(block.type == "set") {
+		return compileInstruction(block.computation)
+				.concat(allocateLocal(block.val));
+
 	}
 }
 
