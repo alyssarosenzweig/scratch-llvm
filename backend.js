@@ -30,21 +30,23 @@ module.exports.compileFunction = function(func) {
 
 	for(var i = 0; i < func.code.length; ++i) {
 		console.log(func.code[i]);
-		if(func.code[i].type == "call") {
-			// calling a (potentially foreign) function
-
-			blockList = blockList.concat(callBlock(func.code[i]));
-			
-		} else if(func.code[i].type == "ffi") {
-			// FFI block
-			// load the code from the options
-			blockList = blockList.concat(module.exports.ffi[func.code[i].ffiBlock]);
-		}
+		blockList = blockList.concat(compileInstruction(func.code[i]));
 	}
 
 	blockList = blockList.concat(returnBlock());
 
 	return blockList;
+}
+
+function compileInstruction(block) {
+	if(block.type == "call") {
+		// calling a (potentially foreign) function
+		return callBlock(block);
+	} else if(block.type == "ffi") {
+		// FFI block
+		// load the code from the options
+		return module.exports.ffi[block.ffiBlock];
+	}
 }
 
 // fixme: stub
