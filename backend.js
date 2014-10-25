@@ -107,6 +107,6 @@ function callBlock(block) {
 	}
 
 	return [
-		["call", spec]
+		["call", spec].concat(args)
 	];
 }
