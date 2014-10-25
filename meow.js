@@ -75,8 +75,8 @@ Meow.prototype.addScript = function(blocks) {
 	this.scripts.push(new ScriptTuple(blocks, 0, 0));
 }
 
-Meow.prototype.addList = function(tuple) {
-	this.lists.push(tuple);
+Meow.prototype.addList = function(name) {
+	this.lists.push(new ListTuple(name));
 }
 
 Meow.prototype.addVariable = function(name, value) {

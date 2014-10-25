@@ -28,7 +28,10 @@ console.log(JSON.stringify(IR));
 
 var tty = new (require("./meow")).ListTuple("TTY");
 tty.classicTTY();
-meow.addList(tty);
+meow.lists.push(tty);
+
+meow.addList("Stack");
+meow.addList("# of locals");
 
 var alphabet = "";
 for(var i = 0; i < 256; ++i) {
