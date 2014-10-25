@@ -77,49 +77,7 @@ function parse(file, ffi) {
 				mod.functions.push(functionBlock);
 				inFunctionBlock = false;
 			} else if(regexs.call.test(lines[i])) {
-				var m = lines[i].match(regexs.call);
-
-				var returnType = m[1];
-				var funcName = m[2];
-				var paramList = m[3];
-				var params = [];
-
-				// due to the shear complexity of IR, we have to manually parse
-				var p = 0;
-				var temp = "";
-
-				var paranDepth = 0;
-
-				while(p < paramList.length) {
-					if(paranDepth == 0 && (paramList[p] == ',' || paramList[p] == ')')) {
-						params.push(temp);
-						temp = "";
-					} else {
-						temp += paramList[p];
-
-						if(paramList[p] == "(") {
-							paranDepth++;
-						} else if(paramList[p] == ")") {
-							paranDepth--;
-						}
-					}
-
-					++p;
-				}
-
-				for(var j = 0; j < params.length; ++j) {
-					var type = params[j].split(' ')[0];
-					var val = params[j].slice(type.length+1);
-					params[j] = [type, val];
-				}
-
-				functionBlock.code.push(
-				{
-					type: "call",
-					returnType: returnType,
-					funcName: funcName,
-					paramList: params
-				})
+				callBlock(lines[i].match(regexs.call));
 			} else if(regexs.localSet.test(lines[i])) {
 				var m = lines[i].match(regexs.localSet);
 				console.log(m);
@@ -142,4 +100,48 @@ function extractParamList(params) {
 
 module.exports = function(options) {
 	return parse(fs.readFileSync(options.filename).toString(), options.ffi || []);
+}
+
+// block definitions
+function callBlock(m) {
+	var returnType = m[1];
+	var funcName = m[2];
+	var paramList = m[3];
+	var params = [];
+
+	// due to the shear complexity of IR, we have to manually parse
+	var p = 0;
+	var temp = "";
+
+	var paranDepth = 0;
+
+	while(p < paramList.length) {
+		if(paranDepth == 0 && (paramList[p] == ',' || paramList[p] == ')')) {
+			params.push(temp);
+			temp = "";
+		} else {
+			temp += paramList[p];
+
+			if(paramList[p] == "(") {
+				paranDepth++;
+			} else if(paramList[p] == ")") {
+				paranDepth--;
+			}
+		}
+
+		++p;
+	}
+
+	for(var j = 0; j < params.length; ++j) {
+		var type = params[j].split(' ')[0];
+		var val = params[j].slice(type.length+1);
+		params[j] = [type, val];
+	}
+
+	return {
+			type: "call",
+			returnType: returnType,
+			funcName: funcName,
+			paramList: params
+	};
 }

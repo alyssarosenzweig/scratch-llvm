@@ -1,6 +1,9 @@
 void putch(int);
 
+int lotd() {
+	return 'H';
+}
+
 void main() {
-	int x = 1;
-	putch('A' + x);
+	putch(lotd());
 }
