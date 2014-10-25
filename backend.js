@@ -79,6 +79,12 @@ function formatValue(type, value) {
 }
 
 // higher-level code generation
+function initLocal() {
+	return [
+		["append:toList:", "0", "# of locals"]
+	]
+}
+
 function allocateLocal(val) {
 	return [
 		["setLine:ofList:to:", "last", "# of locals", ["+", ["getLine:ofList:", "last", "# of locals"], 1]],
