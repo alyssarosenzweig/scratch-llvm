@@ -7,7 +7,7 @@ var regexs = {
 	declare: /declare ([^ ]+) ([^\(]+)([^\)]+)\)/,
 
 	call: /\s*call ([^ ]+) ([^\(]+)\((.+)/,
-	ret: /\s*ret (.+)/
+	ret: /\s*ret (.+)/,
 
 	localSet: /\s+%([^ ]+) = (.+)/,
 }
