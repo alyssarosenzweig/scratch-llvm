@@ -25,7 +25,8 @@ module.exports.generateFunctionHat = function(func) {
 module.exports.compileFunction = function(func) {
 	console.log("Compiling "+JSON.stringify(func)+"...");
 
-	var blockList = [module.exports.generateFunctionHat(func)];
+	var blockList = [module.exports.generateFunctionHat(func)]
+					.concat(initLocal());
 
 	for(var i = 0; i < func.code.length; ++i) {
 		console.log(func.code[i]);
@@ -59,6 +60,8 @@ module.exports.compileFunction = function(func) {
 		}
 	}
 
+	blockList.concat(returnBlock());
+
 	return blockList;
 }
 
@@ -88,7 +91,7 @@ function initLocal() {
 function allocateLocal(val) {
 	return [
 		["setLine:ofList:to:", "last", "# of locals", ["+", ["getLine:ofList:", "last", "# of locals"], 1]],
-		["append:toList:", val, "Stack"]]],
+		["append:toList:", val, "Stack"]
 	];
 }
 
@@ -99,7 +102,7 @@ function freeLocals() {
 	];
 }
 
-function return(val) {
+function returnBlock(val) {
 	var proc = freeLocals();
 	
 	if(val) {
