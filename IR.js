@@ -7,6 +7,7 @@ var regexs = {
 	declare: /declare ([^ ]+) ([^\(]+)([^\)]+)\)/,
 
 	call: /\s*call ([^ ]+) ([^\(]+)\((.+)/,
+	ret: /\s*ret (.+)/
 
 	localSet: /\s+%([^ ]+) = (.+)/,
 }
@@ -89,7 +90,12 @@ function parse(file, ffi) {
 				}
 			} else if(regexs.call.test(lines[i])) {
 				functionBlock.code.push(callBlock(lines[i].match(regexs.call)));
-			} 
+			} else if(regexs.ret.test(lines[i])) {
+				functionBlock.code.push({
+					type: "ret",
+					value: lines[i].match(regexs.ret)[1]
+				});
+			}
 		}
 	}
 
