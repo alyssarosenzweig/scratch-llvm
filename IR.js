@@ -125,7 +125,8 @@ function callBlock(m) {
 
 	while(p < paramList.length) {
 		if(paranDepth == 0 && (paramList[p] == ',' || paramList[p] == ')')) {
-			params.push(temp);
+			if(temp.length)
+				params.push(temp);
 			temp = "";
 		} else {
 			temp += paramList[p];
