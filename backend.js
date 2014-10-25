@@ -92,3 +92,15 @@ function freeLocals() {
 		["deleteLine:ofList:", "last", "# of locals"]
 	];
 }
+
+function return(val) {
+	var proc = freeLocals();
+	
+	if(val) {
+		proc.push(["setVar:to:", "return value", val]);
+	}
+
+	proc.push(["stopScripts", "this script"]);
+
+	return proc;
+}
