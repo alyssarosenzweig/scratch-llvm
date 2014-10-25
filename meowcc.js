@@ -51,7 +51,7 @@ for(var i = 0; i < IR.functions.length; ++i) {
 	meow.addScript(backend.compileFunction(IR.functions[i]));
 }
 
-meow.addVariable("return value");
+meow.addVariable("return value", 0);
 
 meow.addScript([
 		["whenGreenFlag"],
