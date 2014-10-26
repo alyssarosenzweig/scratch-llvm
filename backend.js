@@ -176,7 +176,7 @@ function dereferenceAndSet(ptr, content) {
 	return [
 		[
 			"setLine:ofList:to:",
-			fetchByName(ptr),
+			getOffset(ptr),
 			"Stack",
 			fetchByName(content)
 		]
