@@ -4,7 +4,8 @@ module.exports.ffi = {};
 
 var functionContext = {
 	locals: {},
-	localDepth: 0
+	localDepth: 0,
+	params: []
 }
 
 module.exports.generateFunctionHat = function(func) {
@@ -12,11 +13,16 @@ module.exports.generateFunctionHat = function(func) {
 	var inputs = [];
 	var defaults = [];
 
+	functionContext.params = [];
+
 	for(var i = 0; i < func.paramList.length; ++i) {
+		var pName = "param" + i;
+
 		if(func.paramList[i][1])
-			inputs.push(func.paramList[i][1]);
-		else
-			inputs.push("param"+i);
+			pName = func.paramList[i][1];
+
+		inputs.push(pName);
+		functionContext.params.push(pName);
 		
 		defaults.push(defaultForType(func.paramList[i][0]));
 		spec += " "+specifierForType(func.paramList[i][0]);
