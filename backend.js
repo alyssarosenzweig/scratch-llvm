@@ -69,6 +69,8 @@ function compileInstruction(block) {
 			val = ["readVariable", "return value"];
 		} else if(block.val.type == "variable") {
 			val = fetchByName(block.val.name);
+		} else if(block.val.type == "arithmetic") {
+			val = [block.val.operation, fetchByName(block.val.operand1), fetchByName(block.val.operand2)];
 		}
 
 		return compileInstruction(block.computation)
@@ -143,6 +145,8 @@ function fetchByName(n) {
 		return ["getLine:ofList:", stackPosFromOffset(getOffset(n)), "Stack"];
 	else if(functionContext.params.indexOf(n) > -1)
 		return ["getParam", n, "r"];
+	else if( (n * 1) == n)
+		return n
 	else
 		return 0;
 }
