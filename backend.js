@@ -60,6 +60,8 @@ function compileInstruction(block) {
 	} else if(block.type == "ret") {
 		return returnBlock(block.value);
 	}
+
+	return [];
 }
 
 // fixme: stub
