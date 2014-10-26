@@ -23,10 +23,10 @@ function parse(file, ffi) {
 	// (aka I just broke something)
 	// poke me
 
-	file = file.replace("zeroext ", "");
-	file = file.replace(" zeroext", "");
-	file = file.replace("signext ", "");
-	file = file.replace(", align 4", "");
+	file = file.replace(/zeroext /g, "");
+	file = file.replace(/ zeroext/g, "");
+	file = file.replace(/signext /g, "");
+	file = file.replace(/, align 4/g, "");
 
 	var lines = file.split('\n');
 
@@ -113,6 +113,9 @@ function parse(file, ffi) {
 					}
 
 					functionBlock.code.push(block);
+				} else {
+					console.log("Unknown instruction equality: ");
+					console.log(lines[i]);
 				}
 			} else if(regexs.call.test(lines[i])) {
 				functionBlock.code.push(callBlock(lines[i].match(regexs.call)));

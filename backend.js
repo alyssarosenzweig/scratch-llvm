@@ -63,6 +63,8 @@ function compileInstruction(block) {
 	} else if(block.type == "set") {
 		var val = 0;
 
+		console.log("SET: "+JSON.stringify(block));
+
 		if(block.val.type == "return value") {
 			val = ["readVariable", "return value"];
 		} else if(block.val.type == "variable") {
