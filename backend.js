@@ -86,7 +86,7 @@ function formatValue(type, value) {
 	console.log("FORMAT: "+type+","+value);
 
 	if(value[0] == '%') {
-		return fetchLocal(getOffset(value));
+		return fetchByName(value);
 	}
 
 	return value;
@@ -122,8 +122,13 @@ function freeLocals() {
 	];
 }
 
-function fetchLocal(local) {
-	return ["getLine:ofList:", ["-", ["lineCountOfList:", "Stack"], local], "Stack"];
+function fetchByName(n) {
+	if(functionContext.locals[n])
+		return ["getLine:ofList:", ["-", ["lineCountOfList:", "Stack"], getOffset(n)], "Stack"];
+	else if(functionContext.params.indexOf(n) > -1)
+		return ["getParam", n, "r"];
+	else
+		return 0;
 }
 
 function returnBlock(val) {
