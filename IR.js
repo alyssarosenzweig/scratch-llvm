@@ -3,15 +3,16 @@
 var fs = require('fs');
 
 var regexs = {
-	define: /define ([^ ]+) ([^\(]+)\(([^\)]*)\)([^{]+){/,
-	declare: /declare ([^ ]+) ([^\(]+)([^\)]+)\)/,
+	define: /^define ([^ ]+) ([^\(]+)\(([^\)]*)\)([^{]+){/,
+	declare: /^declare ([^ ]+) ([^\(]+)([^\)]+)\)/,
 
-	call: /\s*call ([^ ]+) ([^\(]+)\((.+)/,
-	ret: /\s*ret (.+)/,
+	call: /^\s*call ([^ ]+) ([^\(]+)\((.+)/,
+	ret: /^\s*ret (.+)/,
 
-	alloca: /\s*alloca (.+)/,
+	alloca: /^\s*alloca (.+)/,
+	store: /^\s+store ([^ ]+) ([^,]+), ([^ ]+) ([^,]+)/,
 
-	localSet: /\s+%([^ ]+) = (.+)/,
+	localSet: /^\s+%([^ ]+) = (.+)/,
 }
 
 function parse(file, ffi) {
@@ -109,6 +110,24 @@ function parse(file, ffi) {
 					type: "ret",
 					value: extractTypeValue(lines[i].match(regexs.ret)[1])
 				});
+			} else if(regexs.store.test(lines[i])) {
+				var m = lines[i].match(regexs.store);
+
+				functionBlock.code.push({
+					type: "store",
+					src: {
+						type: m[1],
+						value: m[2]
+					},
+					destination: {
+						type: m[1],
+						value: m[2]
+					}
+				})
+
+			} else {
+				console.log("Unknown instruction line: ");
+				console.log(lines[i]);
 			}
 		}
 	}
