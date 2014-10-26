@@ -56,7 +56,7 @@ function compileInstruction(block) {
 		return module.exports.ffi[block.ffiBlock];
 	} else if(block.type == "set") {
 		return compileInstruction(block.computation)
-				.concat(allocateLocal(block.val));
+				.concat(allocateLocal(block.val, block.name));
 	} else if(block.type == "ret") {
 		return returnBlock(block.value);
 	}
@@ -95,7 +95,11 @@ function initLocal() {
 	]
 }
 
-function allocateLocal(val) {
+function allocateLocal(val, name) {
+	if(name) {
+		functionContext.locals[name] = ++functionContext.localDepth;
+	}
+
 	return [
 		["setLine:ofList:to:", "last", "# of locals", ["+", ["getLine:ofList:", "last", "# of locals"], 1]],
 		["append:toList:", val, "Stack"]
