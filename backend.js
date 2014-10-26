@@ -165,7 +165,7 @@ function callBlock(block) {
 function dereferenceAndSet(ptr, content) {
 	return [
 		[
-			"setLine:ofList:to",
+			"setLine:ofList:to:",
 			fetchByName(ptr),
 			"Stack",
 			fetchByName(content)
