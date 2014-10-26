@@ -122,7 +122,7 @@ function returnBlock(val) {
 	var proc = freeLocals();
 	
 	if(val) {
-		proc.push(["setVar:to:", "return value", val]);
+		proc.push(["setVar:to:", "return value", formatValue(val[0], val[1])]);
 	}
 
 	proc.push(["stopScripts", "this script"]);

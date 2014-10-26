@@ -94,7 +94,7 @@ function parse(file, ffi) {
 			} else if(regexs.ret.test(lines[i])) {
 				functionBlock.code.push({
 					type: "ret",
-					value: lines[i].match(regexs.ret)[1]
+					value: extractTypeValue(lines[i].match(regexs.ret)[1])
 				});
 			}
 		}
@@ -149,9 +149,7 @@ function callBlock(m) {
 	}
 
 	for(var j = 0; j < params.length; ++j) {
-		var type = params[j].split(' ')[0];
-		var val = params[j].slice(type.length+1);
-		params[j] = [type, val];
+		params[j] = extractTypeValue(params[j]);
 	}
 
 	return {
@@ -160,4 +158,10 @@ function callBlock(m) {
 			funcName: funcName,
 			paramList: params
 	};
+}
+
+function extractTypeValue(glob) {
+		var type = glob.split(' ')[0];
+		var val = glob.slice(type.length+1);
+		return [type, val];
 }
