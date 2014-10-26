@@ -9,6 +9,8 @@ var regexs = {
 	call: /\s*call ([^ ]+) ([^\(]+)\((.+)/,
 	ret: /\s*ret (.+)/,
 
+	alloca: /\s*alloca (.+)/,
+
 	localSet: /\s+%([^ ]+) = (.+)/,
 }
 
@@ -21,6 +23,7 @@ function parse(file, ffi) {
 	file = file.replace("zeroext ", "");
 	file = file.replace(" zeroext", "");
 	file = file.replace("signext ", "");
+	file = file.replace(", align 4", "");
 
 	var lines = file.split('\n');
 
@@ -81,13 +84,23 @@ function parse(file, ffi) {
 				var m = lines[i].match(regexs.localSet);
 				console.log(m);
 
+				var block = {
+					type: "set",
+					name: "%"+m[1],
+					val: 0,
+					computation: []
+				};
+
 				if(regexs.call.test(m[2])) {
-					functionBlock.code.push({
-						type: "set",
-						name: "%"+m[1],
-						val: ["readVariable", "return value"],
-						computation: callBlock(m[2].match(regexs.call))
-					})
+					block.val = ["readVariable", "return value"];
+					block.computation = callBlock(m[2].match(regexs.call));
+
+					functionBlock.code.push(block);
+				} else if(regexs.alloca.test(m[2])) {
+					// no computation work here, but it still needs a spot on the stack for now
+					// todo: optimize alloca calls out
+					
+					functionBlock.code.push(block);
 				}
 			} else if(regexs.call.test(lines[i])) {
 				functionBlock.code.push(callBlock(lines[i].match(regexs.call)));
