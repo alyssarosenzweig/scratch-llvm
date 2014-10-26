@@ -108,6 +108,10 @@ function getOffset(value) {
 	return functionContext.localDepth - functionContext.locals[value];
 }
 
+function stackPosFromOffset(offset) {
+	return ["-", ["lineCountOfList:", "Stack"], offset];
+}
+
 // higher-level code generation
 function initLocal() {
 	return [
@@ -136,7 +140,7 @@ function freeLocals() {
 
 function fetchByName(n) {
 	if(functionContext.locals[n])
-		return ["getLine:ofList:", ["-", ["lineCountOfList:", "Stack"], getOffset(n)], "Stack"];
+		return ["getLine:ofList:", stackPosFromOffset(getOffset(n)), "Stack"];
 	else if(functionContext.params.indexOf(n) > -1)
 		return ["getParam", n, "r"];
 	else
@@ -176,7 +180,7 @@ function dereferenceAndSet(ptr, content) {
 	return [
 		[
 			"setLine:ofList:to:",
-			getOffset(ptr),
+			stackPosFromOffset(getOffset(ptr)),
 			"Stack",
 			fetchByName(content)
 		]
