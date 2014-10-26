@@ -120,8 +120,8 @@ function parse(file, ffi) {
 						value: m[2]
 					},
 					destination: {
-						type: m[1],
-						value: m[2]
+						type: m[3],
+						value: m[4]
 					}
 				})
 
