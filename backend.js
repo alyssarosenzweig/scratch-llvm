@@ -65,6 +65,8 @@ function compileInstruction(block) {
 				.concat(allocateLocal(block.val, block.name));
 	} else if(block.type == "ret") {
 		return returnBlock(block.value);
+	} else if(block.type == "store") {
+		return dereferenceAndSet(block.destination.value, block.src.value);fetchByName(
 	}
 
 	return [];
@@ -160,12 +162,13 @@ function callBlock(block) {
 
 // TODO: more robust implementation to support heap
 
-function dereferenceAndSet(ptr) {
+function dereferenceAndSet(ptr, content) {
 	return [
 		[
 			"setLine:ofList:to",
 			fetchByName(ptr),
-			"Stack"
+			"Stack",
+			fetchByName(content)
 		]
 	];
 }
