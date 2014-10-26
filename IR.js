@@ -84,7 +84,7 @@ function parse(file, ffi) {
 				if(regexs.call.test(m[2])) {
 					functionBlock.code.push({
 						type: "set",
-						name: m[1],
+						name: "%"+m[1],
 						val: ["readVariable", "return value"],
 						computation: callBlock(m[2].match(regexs.call))
 					})

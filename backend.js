@@ -97,6 +97,7 @@ function initLocal() {
 
 function allocateLocal(val, name) {
 	if(name) {
+		console.log(name+","+val);
 		functionContext.locals[name] = ++functionContext.localDepth;
 	}
 
