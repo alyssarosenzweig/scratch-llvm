@@ -61,8 +61,14 @@ function compileInstruction(block) {
 		// load the code from the options
 		return module.exports.ffi[block.ffiBlock];
 	} else if(block.type == "set") {
+		var val = 0;
+
+		if(block.val.type == "return value") {
+			val = ["readVariable", "return value"];
+		}
+
 		return compileInstruction(block.computation)
-				.concat(allocateLocal(block.val, block.name));
+				.concat(allocateLocal(val, block.name));
 	} else if(block.type == "ret") {
 		return returnBlock(block.value);
 	} else if(block.type == "store") {

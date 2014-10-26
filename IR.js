@@ -12,6 +12,8 @@ var regexs = {
 	alloca: /^\s*alloca (.+)/,
 	store: /^\s+store ([^ ]+) ([^,]+), ([^ ]+) ([^,]+)/,
 
+	load: /^load ([^ ]+) (.+)/,
+
 	localSet: /^\s+%([^ ]+) = (.+)/,
 }
 
@@ -93,7 +95,9 @@ function parse(file, ffi) {
 				};
 
 				if(regexs.call.test(m[2])) {
-					block.val = ["readVariable", "return value"];
+					block.val = {
+						type: "return value"
+					}
 					block.computation = callBlock(m[2].match(regexs.call));
 
 					functionBlock.code.push(block);
@@ -101,6 +105,13 @@ function parse(file, ffi) {
 					// no computation work here, but it still needs a spot on the stack for now
 					// todo: optimize alloca calls out
 					
+					functionBlock.code.push(block);
+				} else if(regexs.load.test(m[2])) {
+					block.val = {
+						type: "variable",
+						name: m[2].match(regexs.load)[2]
+					}
+
 					functionBlock.code.push(block);
 				}
 			} else if(regexs.call.test(lines[i])) {
