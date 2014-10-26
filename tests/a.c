@@ -1,9 +1,10 @@
 void putch(int);
 
-int lotd() {
-	return 'H';
+void alphabet(int letter) {
+	putch(letter);
+	alphabet(letter + 1);
 }
 
 void main() {
-	putch(lotd());
+	alphabet(0);
 }
