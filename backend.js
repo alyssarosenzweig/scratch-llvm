@@ -2,6 +2,11 @@
 
 module.exports.ffi = {};
 
+var functionContext = {
+	locals: {},
+	localDepth: 0
+}
+
 module.exports.generateFunctionHat = function(func) {
 	var spec = func.funcName;
 	var inputs = [];
@@ -27,6 +32,9 @@ module.exports.compileFunction = function(func) {
 
 	var blockList = [module.exports.generateFunctionHat(func)]
 					.concat(initLocal());
+
+	functionContext.locals = {};
+	functionContext.localDepth = 0;
 
 	for(var i = 0; i < func.code.length; ++i) {
 		console.log(func.code[i]);
@@ -67,7 +75,17 @@ function specifierForType(type) {
 
 // fixme: stub
 function formatValue(type, value) { 
+	console.log("FORMAT: "+type+","+value);
+
+	if(value[0] == '%') {
+		return fetchLocal(getOffset(value));
+	}
+
 	return value;
+}
+
+function getOffset(value) {
+	return functionContext.localDepth - functionContext.locals[value];
 }
 
 // higher-level code generation
