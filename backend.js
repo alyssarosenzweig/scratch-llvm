@@ -157,3 +157,15 @@ function callBlock(block) {
 		["call", spec].concat(args)
 	];
 }
+
+// TODO: more robust implementation to support heap
+
+function dereferenceAndSet(ptr) {
+	return [
+		[
+			"setLine:ofList:to",
+			fetchByName(ptr),
+			"Stack"
+		]
+	];
+}
