@@ -65,6 +65,8 @@ function compileInstruction(block) {
 
 		if(block.val.type == "return value") {
 			val = ["readVariable", "return value"];
+		} else if(block.val.type == "variable") {
+			val = fetchByName(block.val.name);
 		}
 
 		return compileInstruction(block.computation)
