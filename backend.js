@@ -66,7 +66,7 @@ function compileInstruction(block) {
 	} else if(block.type == "ret") {
 		return returnBlock(block.value);
 	} else if(block.type == "store") {
-		return dereferenceAndSet(block.destination.value, block.src.value);fetchByName(
+		return dereferenceAndSet(block.destination.value, block.src.value);
 	}
 
 	return [];
