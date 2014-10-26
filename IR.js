@@ -13,6 +13,7 @@ var regexs = {
 	store: /^\s+store ([^ ]+) ([^,]+), ([^ ]+) ([^,]+)/,
 
 	load: /^load ([^ ]+) (.+)/,
+	add: /^add ([^ ]+) ([^,]+), (.+)/
 
 	localSet: /^\s+%([^ ]+) = (.+)/,
 }
@@ -27,6 +28,8 @@ function parse(file, ffi) {
 	file = file.replace(/ zeroext/g, "");
 	file = file.replace(/signext /g, "");
 	file = file.replace(/, align 4/g, "");
+	file = file.replace(/ nsw/g, "");
+	file = file.replace(/ nuw/g, "");
 
 	var lines = file.split('\n');
 
@@ -111,6 +114,16 @@ function parse(file, ffi) {
 						type: "variable",
 						name: m[2].match(regexs.load)[2]
 					}
+
+					functionBlock.code.push(block);
+				} else if(regexs.add.test(m[2])) {
+					var m = m[2].match(regexs.add);
+					block.val = {
+						type: "arithmetic",
+						operation: "+",
+						operand1: m[2],
+						operand2: m[3]
+					};
 
 					functionBlock.code.push(block);
 				} else {
