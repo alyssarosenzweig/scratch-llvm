@@ -114,9 +114,7 @@ function freeLocals() {
 }
 
 function fetchLocal(local) {
-	return [
-		["getLine:ofList:", ["-", ["lineCountOfList:", "Stack"], local], "Stack"]
-	];
+	return ["getLine:ofList:", ["-", ["lineCountOfList:", "Stack"], local], "Stack"];
 }
 
 function returnBlock(val) {
