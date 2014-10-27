@@ -71,6 +71,8 @@ function compileInstruction(block) {
 			val = fetchByName(block.val.name);
 		} else if(block.val.type == "arithmetic") {
 			val = [block.val.operation, fetchByName(block.val.operand1), fetchByName(block.val.operand2)];
+		} else if(block.val.type == "comparison") {
+			val = [specForComparison(block.val.operation), fetchByName(block.val.left), fetchByName(block.val.right)];
 		}
 
 		return compileInstruction(block.computation)
@@ -189,4 +191,11 @@ function dereferenceAndSet(ptr, content) {
 			fetchByName(content)
 		]
 	];
+}
+
+function specForComparison(comp) {
+	if(comp == "eq") {
+		return "=";
+	}
+	return "undefined";
 }
