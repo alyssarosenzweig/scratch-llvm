@@ -14,6 +14,7 @@ var regexs = {
 
 	load: /^load ([^ ]+) (.+)/,
 	add: /^add ([^ ]+) ([^,]+), (.+)/,
+	icmp: /^icmp ([^ ]+) ([^ ]+) ([^,]+), (.+)/,
 
 	localSet: /^\s+%([^ ]+) = (.+)/,
 }
@@ -124,6 +125,17 @@ function parse(file, ffi) {
 						operand1: m[2],
 						operand2: m[3]
 					};
+
+					functionBlock.code.push(block);
+				} else if(regexs.icmp.test(m[2])) {
+					var m = m[2].match(regexs.icmp);
+
+					block.val = {
+						type: "comparison",
+						operation: m[1],
+						left: m[3],
+						right: m[4]
+					}
 
 					functionBlock.code.push(block);
 				} else {
