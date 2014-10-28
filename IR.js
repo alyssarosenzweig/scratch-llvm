@@ -17,6 +17,8 @@ var regexs = {
 	icmp: /^icmp ([^ ]+) ([^ ]+) ([^,]+), (.+)/,
 
 	localSet: /^\s+%([^ ]+) = (.+)/,
+
+	label: /; <label>:(\d+)/,
 }
 
 function parse(file, ffi) {
@@ -55,7 +57,8 @@ function parse(file, ffi) {
 					returnType: returnType,
 					paramList: extractParamList(paramList),
 					funcName: funcName,
-					code: []
+					code: [],
+					labels: {}
 				};
 				inFunctionBlock = true;
 			} else if(regexs.declare.test(lines[i])) {
@@ -87,6 +90,9 @@ function parse(file, ffi) {
 			if(lines[i] == "}") {
 				mod.functions.push(functionBlock);
 				inFunctionBlock = false;
+			} else if(regexs.label.test(lines[i])) {
+				var m = lines[i].match(regexs.label);
+				functionBlock.labels[m[1]] = functionBlock.code.length;
 			} else if(regexs.localSet.test(lines[i])) {
 				var m = lines[i].match(regexs.localSet);
 				console.log(m);
