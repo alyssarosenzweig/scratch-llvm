@@ -44,7 +44,7 @@ module.exports.compileFunction = function(func) {
 
 	for(var i = 0; i < func.code.length; ++i) {
 		console.log(func.code[i]);
-		blockList = blockList.concat(compileInstruction(func.code[i]));
+		blockList = blockList.concat(compileInstruction(functionContext, func.code[i]));
 	}
 
 	//blockList = blockList.concat(returnBlock());
@@ -52,7 +52,7 @@ module.exports.compileFunction = function(func) {
 	return blockList;
 }
 
-function compileInstruction(block) {
+function compileInstruction(ctx, block) {
 	if(block.type == "call") {
 		// calling a (potentially foreign) function
 		return callBlock(block);
@@ -81,6 +81,10 @@ function compileInstruction(block) {
 		return returnBlock(block.value);
 	} else if(block.type == "store") {
 		return dereferenceAndSet(block.destination.value, block.src.value);
+	} else if(block.type == "gotoComplex") {
+
+	} else if(block.type == "branch") {
+
 	}
 
 	return [];
