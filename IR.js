@@ -19,6 +19,7 @@ var regexs = {
 	localSet: /^\s+%([^ ]+) = (.+)/,
 
 	label: /; <label>:(\d+)/,
+	absoluteBranch: /\s+br label (.+)/
 }
 
 function parse(file, ffi) {
@@ -43,6 +44,16 @@ function parse(file, ffi) {
 	var inFunctionBlock = false;
 	var functionBlock = {};
 
+	function gotoComplex(initBranch) {
+		if(!functionBlock.inGotoComplex) {
+			functionBlock.inGotoComplex = true;
+			functionBlock.code.push({
+				type: "gotoComplex"
+			});
+
+		}
+	}
+
 	for(var i = 0; i < lines.length; ++i) {
 		if(!inFunctionBlock) {
 			if(regexs.define.test(lines[i])) {
@@ -58,7 +69,8 @@ function parse(file, ffi) {
 					paramList: extractParamList(paramList),
 					funcName: funcName,
 					code: [],
-					labels: {}
+					labels: {},
+					inGotoComplex: false
 				};
 				inFunctionBlock = true;
 			} else if(regexs.declare.test(lines[i])) {
@@ -170,6 +182,14 @@ function parse(file, ffi) {
 					}
 				})
 
+			} else if(regexs.absoluteBranch.test(lines[i])) {
+				var label = lines[i].match(regexs.absoluteBranch)[1];
+				gotoComplex();
+				functionBlock.code.push({
+					type: "branch",
+					conditional: false,
+					dest: label[1]
+				});
 			} else {
 				console.log("Unknown instruction line: ");
 				console.log(lines[i]);
