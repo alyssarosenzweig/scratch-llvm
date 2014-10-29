@@ -86,7 +86,7 @@ function compileInstruction(ctx, block) {
 			context: [],
 		}
 
-		return ["doForever", ctx.gotoComplex.context];
+		return [["doForever", ctx.gotoComplex.context]];
 	} else if(block.type == "label") {
 		var chunk = [
 			["doIfElse", ["=", "label", block.label], [], []]
