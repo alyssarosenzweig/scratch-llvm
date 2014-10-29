@@ -75,7 +75,7 @@ function compileInstruction(ctx, block) {
 			val = [specForComparison(block.val.operation), fetchByName(block.val.left), fetchByName(block.val.right)];
 		}
 
-		return compileInstruction(block.computation)
+		return compileInstruction(ctx, block.computation)
 				.concat(allocateLocal(val, block.name));
 	} else if(block.type == "ret") {
 		return returnBlock(block.value);
