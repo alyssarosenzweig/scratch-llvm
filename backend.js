@@ -83,6 +83,12 @@ function compileInstruction(ctx, block) {
 		return dereferenceAndSet(block.destination.value, block.src.value);
 	} else if(block.type == "gotoComplex") {
 
+	} else if(block.type == "label") {
+		ctx.gotoComplex.currentContext[3] = [
+			["doIfElse", ["=", "label", block.label], [], []]
+		];
+
+		ctx.gotoComplex.currentContext = ctx.gotoComplex.currentContext[3];
 	} else if(block.type == "branch") {
 
 	}
