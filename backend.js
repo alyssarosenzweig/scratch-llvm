@@ -84,21 +84,22 @@ function compileInstruction(ctx, block) {
 	} else if(block.type == "gotoComplex") {
 		ctx.gotoComplex = {
 			context: [],
+			forever: ["doForever", []]
 		}
 
-		return [["doForever", ctx.gotoComplex.context]];
+		return [ctx.gotoComplex.forever];
 	} else if(block.type == "label") {
-		var chunk = [
-			["doIfElse", ["=", "label", block.label], [], []]
-		]
+		var chunk = ["doIfElse", ["=", "label", block.label], [], []];
 
 		if(ctx.gotoComplex.currentContext) {
-			ctx.gotoComplex.currentContext[3] = chunk;
+			ctx.gotoComplex.currentContext[3] = [chunk];
 			ctx.gotoComplex.currentContext = ctx.gotoComplex.currentContext[3];
 		} else {
 			ctx.gotoComplex.currentContext = chunk;
 			ctx.gotoComplex.context = ctx.gotoComplex.currentContext;
+			ctx.gotoComplex.forever[1] = [ctx.gotoComplex.context];
 		}
+
 	} else if(block.type == "branch") {
 
 	}
