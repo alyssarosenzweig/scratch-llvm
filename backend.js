@@ -82,13 +82,23 @@ function compileInstruction(ctx, block) {
 	} else if(block.type == "store") {
 		return dereferenceAndSet(block.destination.value, block.src.value);
 	} else if(block.type == "gotoComplex") {
-
+		ctx.gotoComplex = {
+			context: [],
+		}
 	} else if(block.type == "label") {
-		ctx.gotoComplex.currentContext[3] = [
-			["doIfElse", ["=", "label", block.label], [], []]
-		];
+		if(ctx.gotoComplex.currentContext) {
+			ctx.gotoComplex.currentContext[3] = [
+				["doIfElse", ["=", "label", block.label], [], []]
+			];
 
-		ctx.gotoComplex.currentContext = ctx.gotoComplex.currentContext[3];
+			ctx.gotoComplex.currentContext = ctx.gotoComplex.currentContext[3];
+		} else {
+			ctx.gotoComplex.currentContext = [
+				["doIfElse", ["=", "label", block.label], [], []]
+			];
+
+			ctx.gotoComplex.context = ctx.gotoComplex.currentContext;
+		}
 	} else if(block.type == "branch") {
 
 	}
