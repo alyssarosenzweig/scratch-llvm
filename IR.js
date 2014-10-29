@@ -105,6 +105,14 @@ function parse(file, ffi) {
 			} else if(regexs.label.test(lines[i])) {
 				var m = lines[i].match(regexs.label);
 				functionBlock.labels[m[1]] = functionBlock.code.length;
+
+				// synthetic label block for enabling the backend to function properly
+				// without the need of very messy hacks (iterating through labels, etc.)
+
+				functionBlock.code.push({
+					type: "label",
+					label: m[1]
+				});
 			} else if(regexs.localSet.test(lines[i])) {
 				var m = lines[i].match(regexs.localSet);
 				console.log(m);
