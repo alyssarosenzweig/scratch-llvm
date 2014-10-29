@@ -44,7 +44,20 @@ module.exports.compileFunction = function(func) {
 
 	for(var i = 0; i < func.code.length; ++i) {
 		console.log(func.code[i]);
-		blockList = blockList.concat(compileInstruction(functionContext, func.code[i]));
+
+		var hasGotoComplex = functionContext.gotoComplex && functionContext.gotoComplex.okToUse; // this MUST be before compileInstruction for branching to work
+		var instruction = compileInstruction(functionContext, func.code[i]);
+
+		if(hasGotoComplex) {
+			if(functionContext.gotoComplex.currentContext[2]) {
+				functionContext.gotoComplex.currentContext[2] =
+					functionContext.gotoComplex.currentContext[2].concat(instruction);
+			} else {
+				functionContext.gotoComplex.currentContext[2] = instruction;
+			}
+		} else {
+			blockList = blockList.concat(instruction);
+		}
 	}
 
 	//blockList = blockList.concat(returnBlock());
@@ -84,6 +97,7 @@ function compileInstruction(ctx, block) {
 	} else if(block.type == "gotoComplex") {
 		ctx.gotoComplex = {
 			context: [],
+			okToUse: false,
 			forever: ["doForever", []]
 		}
 
@@ -101,7 +115,7 @@ function compileInstruction(ctx, block) {
 		}
 
 	} else if(block.type == "branch") {
-
+		ctx.gotoComplex.okToUse = true;
 	}
 
 	return [];
