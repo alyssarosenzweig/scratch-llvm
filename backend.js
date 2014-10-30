@@ -91,7 +91,21 @@ function compileInstruction(ctx, block) {
 		} else if(block.val.type == "arithmetic") {
 			val = [block.val.operation, fetchByName(block.val.operand1), fetchByName(ctx, block.val.operand2)];
 		} else if(block.val.type == "comparison") {
-			val = castToNumber([specForComparison(block.val.operation), fetchByName(ctx, block.val.left), fetchByName(ctx, block.val.right)]);
+			var spec = specForComparison(block.val.operation);
+			var negate = false;
+
+			if(spec[0] == "!") {
+				negate = true;
+				spec = spec.slice(1);
+			}
+
+			var b = [spec, fetchByName(ctx, block.val.left), fetchByName(ctx, block.val.right)];
+
+			if(negate) {
+				b = ["not", b];
+			}
+
+			val = castToNumber(b);
 		}
 
 		return compileInstruction(ctx, block.computation)
@@ -253,6 +267,8 @@ function dereferenceAndSet(ctx, ptr, content) {
 function specForComparison(comp) {
 	if(comp == "eq") {
 		return "=";
+	} else if(comp == "neq") {
+		return "!=";
 	}
 	return "undefined";
 }
