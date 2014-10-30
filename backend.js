@@ -46,14 +46,13 @@ module.exports.compileFunction = function(func) {
 	for(var i = 0; i < func.code.length; ++i) {
 		console.log(func.code[i]);
 
-		var hasGotoComplex = functionContext.gotoComplex && functionContext.gotoComplex.okToUse; // this MUST be before compileInstruction for branching to work
+		var hasGotoComplex = functionContext.gotoComplex && functionContext.gotoComplex.okToUse && functionContext.gotoComplex.active; // this MUST be before compileInstruction for branching to work
 		var instruction = compileInstruction(functionContext, func.code[i]);
 
 		if(!hasGotoComplex && functionContext.gotoComplex && functionContext.gotoComplex.okToUse) {
 			blockList = blockList.concat([functionContext.gotoComplex.forever]);
 		}
-
-		if(hasGotoComplex && functionContext.gotoComplex.active) {
+		if(hasGotoComplex) {
 			if(functionContext.gotoComplex.currentContext[2]) {
 				functionContext.gotoComplex.currentContext[2] =
 					functionContext.gotoComplex.currentContext[2].concat(instruction);
