@@ -42,6 +42,10 @@ module.exports.compileFunction = function(func) {
 	functionContext.locals = {};
 	functionContext.localDepth = 0;
 
+	if(func.inGotoComplex) {
+		blockList = blockList.concat(initGotoComplex());
+	}
+
 	for(var i = 0; i < func.code.length; ++i) {
 		console.log(func.code[i]);
 
@@ -91,7 +95,7 @@ function compileInstruction(ctx, block) {
 		return compileInstruction(ctx, block.computation)
 				.concat(allocateLocal(val, block.name));
 	} else if(block.type == "ret") {
-		return returnBlock(block.value);
+		return returnBlock(ctx, block.value);
 	} else if(block.type == "store") {
 		return dereferenceAndSet(block.destination.value, block.src.value);
 	} else if(block.type == "gotoComplex") {
@@ -188,9 +192,13 @@ function fetchByName(n) {
 		return 0;
 }
 
-function returnBlock(val) {
+function returnBlock(ctx, val) {
 	var proc = freeLocals();
 	
+	if(ctx.gotoComplex) {
+		proc = proc.concat(cleanGotoComplex);
+	}
+
 	if(val) {
 		proc.push(["setVar:to:", "return value", formatValue(val[0], val[1])]);
 	}
@@ -235,6 +243,18 @@ function specForComparison(comp) {
 	return "undefined";
 }
 
+function initGotoComplex() {
+	return [
+		["append:toList:", 0, "Label Stack"]
+	];
+}
+
 function getCurrentLabel() {
 	return ["getLine:ofList:", "last", "Label Stack"];
+}
+
+function cleanGotoComplex() {
+	return [
+		["deleteLine:ofList:", "last", "Label Stack"]
+	];
 }
