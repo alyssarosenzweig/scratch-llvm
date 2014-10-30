@@ -269,6 +269,10 @@ function specForComparison(comp) {
 		return "=";
 	} else if(comp == "neq") {
 		return "!=";
+	} else if(comp == "slt" || comp == "ult") {
+		return "<";
+	} else if(comp == "sgt" || comp == "ugt") {
+		return ">";
 	}
 	return "undefined";
 }
