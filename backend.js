@@ -2,13 +2,7 @@
 
 module.exports.ffi = {};
 
-var functionContext = {
-	locals: {},
-	localDepth: 0,
-	params: []
-}
-
-module.exports.generateFunctionHat = function(func) {
+module.exports.generateFunctionHat = function(functionContext, func) {
 	var spec = func.funcName;
 	var inputs = [];
 	var defaults = [];
@@ -36,11 +30,14 @@ module.exports.generateFunctionHat = function(func) {
 module.exports.compileFunction = function(func) {
 	console.log("Compiling "+JSON.stringify(func)+"...");
 
-	var blockList = [module.exports.generateFunctionHat(func)]
-					.concat(initLocal());
+	var functionContext = {
+		locals: {},
+		localDepth: 0,
+		params: []
+	}
 
-	functionContext.locals = {};
-	functionContext.localDepth = 0;
+	var blockList = [module.exports.generateFunctionHat(functionContext, func)]
+					.concat(initLocal());
 
 	if(func.inGotoComplex) {
 		blockList = blockList.concat(initGotoComplex());
@@ -76,7 +73,7 @@ module.exports.compileFunction = function(func) {
 function compileInstruction(ctx, block) {
 	if(block.type == "call") {
 		// calling a (potentially foreign) function
-		return callBlock(block);
+		return callBlock(ctx, block);
 	} else if(block.type == "ffi") {
 		// FFI block
 		// load the code from the options
@@ -89,19 +86,19 @@ function compileInstruction(ctx, block) {
 		if(block.val.type == "return value") {
 			val = ["readVariable", "return value"];
 		} else if(block.val.type == "variable") {
-			val = fetchByName(block.val.name);
+			val = fetchByName(ctx, block.val.name);
 		} else if(block.val.type == "arithmetic") {
-			val = [block.val.operation, fetchByName(block.val.operand1), fetchByName(block.val.operand2)];
+			val = [block.val.operation, fetchByName(block.val.operand1), fetchByName(ctx, block.val.operand2)];
 		} else if(block.val.type == "comparison") {
-			val = [specForComparison(block.val.operation), fetchByName(block.val.left), fetchByName(block.val.right)];
+			val = [specForComparison(block.val.operation), fetchByName(ctx, block.val.left), fetchByName(ctx, block.val.right)];
 		}
 
 		return compileInstruction(ctx, block.computation)
-				.concat(allocateLocal(val, block.name));
+				.concat(allocateLocal(ctx, val, block.name));
 	} else if(block.type == "ret") {
 		return returnBlock(ctx, block.value);
 	} else if(block.type == "store") {
-		return dereferenceAndSet(block.destination.value, block.src.value);
+		return dereferenceAndSet(ctx, block.destination.value, block.src.value);
 	} else if(block.type == "gotoComplex") {
 		ctx.gotoComplex = {
 			context: [],
@@ -143,18 +140,18 @@ function specifierForType(type) {
 }
 
 // fixme: stub
-function formatValue(type, value) { 
+function formatValue(ctx, type, value) { 
 	console.log("FORMAT: "+type+","+value);
 
 	if(value[0] == '%') {
-		return fetchByName(value);
+		return fetchByName(ctx, value);
 	}
 
 	return value;
 }
 
-function getOffset(value) {
-	return functionContext.localDepth - functionContext.locals[value];
+function getOffset(ctx, value) {
+	return ctx.localDepth - ctx.locals[value];
 }
 
 function stackPosFromOffset(offset) {
@@ -168,10 +165,10 @@ function initLocal() {
 	]
 }
 
-function allocateLocal(val, name) {
+function allocateLocal(ctx, val, name) {
 	if(name) {
 		console.log(name+","+val);
-		functionContext.locals[name] = ++functionContext.localDepth;
+		ctx.locals[name] = ++ctx.localDepth;
 	}
 
 	return [
@@ -187,10 +184,10 @@ function freeLocals() {
 	];
 }
 
-function fetchByName(n) {
-	if(functionContext.locals[n])
-		return ["getLine:ofList:", stackPosFromOffset(getOffset(n)), "Stack"];
-	else if(functionContext.params.indexOf(n) > -1)
+function fetchByName(ctx, n) {
+	if(ctx.locals[n])
+		return ["getLine:ofList:", stackPosFromOffset(getOffset(ctx, n)), "Stack"];
+	else if(ctx.params.indexOf(n) > -1)
 		return ["getParam", n, "r"];
 	else if( (n * 1) == n)
 		return n
@@ -206,7 +203,7 @@ function returnBlock(ctx, val) {
 	}
 
 	if(val) {
-		proc.push(["setVar:to:", "return value", formatValue(val[0], val[1])]);
+		proc.push(["setVar:to:", "return value", formatValue(ctx, val[0], val[1])]);
 	}
 
 	proc.push(["stopScripts", "this script"]);
@@ -214,13 +211,13 @@ function returnBlock(ctx, val) {
 	return proc;
 }
 
-function callBlock(block) {
+function callBlock(ctx, block) {
 	var spec = block.funcName;
 	var args = [];
 
 
 	for(var a = 0; a < block.paramList.length; ++a) {
-		args.push(formatValue(block.paramList[a][0], block.paramList[a][1]));
+		args.push(formatValue(ctx, block.paramList[a][0], block.paramList[a][1]));
 		spec += " "+specifierForType(block.paramList[a][0]);
 	}
 
@@ -231,13 +228,13 @@ function callBlock(block) {
 
 // TODO: more robust implementation to support heap
 
-function dereferenceAndSet(ptr, content) {
+function dereferenceAndSet(ctx, ptr, content) {
 	return [
 		[
 			"setLine:ofList:to:",
-			stackPosFromOffset(getOffset(ptr)),
+			stackPosFromOffset(getOffset(ctx, ptr)),
 			"Stack",
-			fetchByName(content)
+			fetchByName(ctx, content)
 		]
 	];
 }
