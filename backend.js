@@ -89,7 +89,7 @@ function compileInstruction(ctx, block) {
 		} else if(block.val.type == "variable") {
 			val = fetchByName(ctx, block.val.name);
 		} else if(block.val.type == "arithmetic") {
-			val = [block.val.operation, fetchByName(block.val.operand1), fetchByName(ctx, block.val.operand2)];
+			val = [block.val.operation, fetchByName(ctx, block.val.operand1), fetchByName(ctx, block.val.operand2)];
 		} else if(block.val.type == "comparison") {
 			var spec = specForComparison(block.val.operation);
 			var negate = false;
