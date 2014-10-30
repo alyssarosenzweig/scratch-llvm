@@ -90,7 +90,7 @@ function compileInstruction(ctx, block) {
 		} else if(block.val.type == "arithmetic") {
 			val = [block.val.operation, fetchByName(block.val.operand1), fetchByName(ctx, block.val.operand2)];
 		} else if(block.val.type == "comparison") {
-			val = [specForComparison(block.val.operation), fetchByName(ctx, block.val.left), fetchByName(ctx, block.val.right)];
+			val = castToNumber([specForComparison(block.val.operation), fetchByName(ctx, block.val.left), fetchByName(ctx, block.val.right)]);
 		}
 
 		return compileInstruction(ctx, block.computation)
@@ -125,7 +125,14 @@ function compileInstruction(ctx, block) {
 
 	} else if(block.type == "branch") {
 		ctx.gotoComplex.active = false;
-		return absoluteBranch(block.dest);
+
+		if(block.conditional) {
+			return [
+				["doIfElse", ["=", fetchByName(ctx, block.condition), 1], absoluteBranch(block.dest.slice(1)), absoluteBranch(block.falseDest.slice(1))]
+			];
+		} else {
+			return absoluteBranch(block.dest);
+		}
 	}
 
 	return [];
@@ -269,4 +276,8 @@ function absoluteBranch(dest) {
 	return [
 		["setLine:ofList:to:", "last", "Label Stack", dest]
 	];
+}
+
+function castToNumber(b) {
+	return ["*", b, 1];
 }

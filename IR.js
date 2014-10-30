@@ -205,9 +205,9 @@ function parse(file, ffi) {
 
 				functionBlock.code.push({
 					type: "branch",
-					conditional: false,
-					dest: match[2].slice(1),
-					falseDest: match[3].slice(1),
+					conditional: true,
+					dest: match[2],
+					falseDest: match[3],
 					condition: match[1]
 				})
 			} else {
