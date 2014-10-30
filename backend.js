@@ -196,7 +196,7 @@ function returnBlock(ctx, val) {
 	var proc = freeLocals();
 	
 	if(ctx.gotoComplex) {
-		proc = proc.concat(cleanGotoComplex);
+		proc = proc.concat(cleanGotoComplex());
 	}
 
 	if(val) {
