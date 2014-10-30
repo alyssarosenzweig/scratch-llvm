@@ -19,7 +19,8 @@ var regexs = {
 	localSet: /^\s+%([^ ]+) = (.+)/,
 
 	label: /; <label>:(\d+)/,
-	absoluteBranch: /\s+br label (.+)/
+	absoluteBranch: /\s+br label (.+)/,
+	conditionalBranch: /\s+br i1 ([^,]+), label ([^,]+), label (.+)/
 }
 
 function parse(file, ffi) {
@@ -196,8 +197,19 @@ function parse(file, ffi) {
 				functionBlock.code.push({
 					type: "branch",
 					conditional: false,
-					dest: label[1]
+					dest: label.slice(1)
 				});
+			} else if(regexs.conditionalBranch.test(lines[i])) {
+				var match = lines[i].match(regexs.conditionalBranch);
+				gotoComplex();
+
+				functionBlock.code.push({
+					type: "branch",
+					conditional: false,
+					dest: match[2].slice(1),
+					falseDest: match[3].slice(1),
+					condition: match[1]
+				})
 			} else {
 				console.log("Unknown instruction line: ");
 				console.log(lines[i]);
