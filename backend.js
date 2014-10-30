@@ -52,6 +52,10 @@ module.exports.compileFunction = function(func) {
 		var hasGotoComplex = functionContext.gotoComplex && functionContext.gotoComplex.okToUse; // this MUST be before compileInstruction for branching to work
 		var instruction = compileInstruction(functionContext, func.code[i]);
 
+		if(!hasGotoComplex && functionContext.gotoComplex && functionContext.gotoComplex.okToUse) {
+			blockList = blockList.concat([functionContext.gotoComplex.forever]);
+		}
+
 		if(hasGotoComplex) {
 			if(functionContext.gotoComplex.currentContext[2]) {
 				functionContext.gotoComplex.currentContext[2] =
@@ -105,9 +109,11 @@ function compileInstruction(ctx, block) {
 			forever: ["doForever", []]
 		}
 
-		return [ctx.gotoComplex.forever];
+		//return [ctx.gotoComplex.forever];
 	} else if(block.type == "label") {
 		var chunk = ["doIfElse", ["=", getCurrentLabel(), block.label], [], []];
+
+		ctx.gotoComplex.okToUse = true;
 
 		if(ctx.gotoComplex.currentContext) {
 			ctx.gotoComplex.currentContext[3] = [chunk];
@@ -119,7 +125,7 @@ function compileInstruction(ctx, block) {
 		}
 
 	} else if(block.type == "branch") {
-		ctx.gotoComplex.okToUse = true;
+		return absoluteBranch(block.dest);
 	}
 
 	return [];
@@ -256,5 +262,11 @@ function getCurrentLabel() {
 function cleanGotoComplex() {
 	return [
 		["deleteLine:ofList:", "last", "Label Stack"]
+	];
+}
+
+function absoluteBranch(dest) {
+	return [
+		["setLine:ofList:to:", "last", "Label Stack", dest]
 	];
 }
