@@ -116,7 +116,7 @@ function compileInstruction(ctx, block) {
 
 		if(ctx.gotoComplex.currentContext) {
 			ctx.gotoComplex.currentContext[3] = [chunk];
-			ctx.gotoComplex.currentContext = ctx.gotoComplex.currentContext[3];
+			ctx.gotoComplex.currentContext = ctx.gotoComplex.currentContext[3][0];
 		} else {
 			ctx.gotoComplex.currentContext = chunk;
 			ctx.gotoComplex.context = ctx.gotoComplex.currentContext;
