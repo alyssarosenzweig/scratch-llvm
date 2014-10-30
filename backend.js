@@ -53,7 +53,7 @@ module.exports.compileFunction = function(func) {
 			blockList = blockList.concat([functionContext.gotoComplex.forever]);
 		}
 
-		if(hasGotoComplex) {
+		if(hasGotoComplex && functionContext.gotoComplex.active) {
 			if(functionContext.gotoComplex.currentContext[2]) {
 				functionContext.gotoComplex.currentContext[2] =
 					functionContext.gotoComplex.currentContext[2].concat(instruction);
@@ -103,7 +103,8 @@ function compileInstruction(ctx, block) {
 		ctx.gotoComplex = {
 			context: [],
 			okToUse: false,
-			forever: ["doForever", []]
+			forever: ["doForever", []],
+			active: true
 		}
 
 		//return [ctx.gotoComplex.forever];
@@ -111,6 +112,7 @@ function compileInstruction(ctx, block) {
 		var chunk = ["doIfElse", ["=", getCurrentLabel(), block.label], [], []];
 
 		ctx.gotoComplex.okToUse = true;
+		ctx.gotoComplex.active = true;
 
 		if(ctx.gotoComplex.currentContext) {
 			ctx.gotoComplex.currentContext[3] = [chunk];
@@ -122,6 +124,7 @@ function compileInstruction(ctx, block) {
 		}
 
 	} else if(block.type == "branch") {
+		ctx.gotoComplex.active = false;
 		return absoluteBranch(block.dest);
 	}
 

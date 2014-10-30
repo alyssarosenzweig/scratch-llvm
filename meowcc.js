@@ -21,7 +21,7 @@ backend.ffi["@putch"] = [
 					[["setLine:ofList:to:",
 							["lineCountOfList:", "TTY"],
 							"TTY",
-							["concatenate:with:", ["getLine:ofList:", ["lineCountOfList:", "TTY"], "TTY"], ["letter:of:", ["+", ["getParam", "param0", "r"], 2], ["readVariable", "alphabet"]]]]]]
+							["concatenate:with:", ["getLine:ofList:", ["lineCountOfList:", "TTY"], "TTY"], ["letter:of:", ["+", ["getParam", "param0", "r"], 1], ["readVariable", "alphabet"]]]]]]
 ];
 
 console.log(JSON.stringify(IR));
@@ -38,8 +38,6 @@ var alphabet = "";
 for(var i = 0; i < 256; ++i) {
 	if(i >= 32 && i < 127) {
 		c = String.fromCharCode(i);
-		if(c == "\\" || c == "\"")
-			c = "\\"+c;
 		alphabet += c;
 	} else {
 		alphabet += ".";
