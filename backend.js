@@ -33,7 +33,8 @@ module.exports.compileFunction = function(func) {
 	var functionContext = {
 		locals: {},
 		localDepth: 0,
-		params: []
+		params: [],
+		gotoInit: false
 	}
 
 	var blockList = [module.exports.generateFunctionHat(functionContext, func)]
@@ -49,8 +50,9 @@ module.exports.compileFunction = function(func) {
 		var hasGotoComplex = functionContext.gotoComplex && functionContext.gotoComplex.okToUse && functionContext.gotoComplex.active; // this MUST be before compileInstruction for branching to work
 		var instruction = compileInstruction(functionContext, func.code[i]);
 
-		if(!hasGotoComplex && functionContext.gotoComplex && functionContext.gotoComplex.okToUse) {
+		if(!functionContext.gotoInit && functionContext.gotoComplex && functionContext.gotoComplex.okToUse) {
 			blockList = blockList.concat([functionContext.gotoComplex.forever]);
+			functionContext.gotoInit = true;
 		}
 		if(hasGotoComplex) {
 			if(functionContext.gotoComplex.currentContext[2]) {
