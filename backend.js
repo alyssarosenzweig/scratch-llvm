@@ -103,7 +103,7 @@ function compileInstruction(ctx, block) {
 
 		return [ctx.gotoComplex.forever];
 	} else if(block.type == "label") {
-		var chunk = ["doIfElse", ["=", "label", block.label], [], []];
+		var chunk = ["doIfElse", ["=", getCurrentLabel(), block.label], [], []];
 
 		if(ctx.gotoComplex.currentContext) {
 			ctx.gotoComplex.currentContext[3] = [chunk];
@@ -233,4 +233,8 @@ function specForComparison(comp) {
 		return "=";
 	}
 	return "undefined";
+}
+
+function getCurrentLabel() {
+	return ["getLine:ofList:", "last", "Label Stack"];
 }
