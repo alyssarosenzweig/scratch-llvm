@@ -74,7 +74,7 @@ function parse(file, ffi) {
 					funcName: funcName,
 					code: [],
 					labels: {},
-					inGotoComplex: false
+					inGotoComplex: false,
 				};
 				inFunctionBlock = true;
 			} else if(regexs.declare.test(lines[i])) {
@@ -85,19 +85,22 @@ function parse(file, ffi) {
 				var paramList = extractParamList(m[3]);
 
 				codeBlock = [];
+				hasFFI = false;
 
 				if(ffi.indexOf(funcName) > -1) {
 					codeBlock = [{
 						type: "ffi",
 						ffiBlock: funcName
 					}];
+					hasFFI = true;
 				}
 
 				mod.functions.push({
 					returnType: returnType,
 					paramList: paramList,
 					funcName: funcName,
-					code: codeBlock
+					code: codeBlock,
+					hasFFI: hasFFI
 				})
 
 				console.log(m);

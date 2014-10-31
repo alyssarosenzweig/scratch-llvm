@@ -37,8 +37,10 @@ module.exports.compileFunction = function(func) {
 		gotoInit: false
 	}
 
-	var blockList = [module.exports.generateFunctionHat(functionContext, func)]
-					.concat(initLocal());
+	var blockList = [module.exports.generateFunctionHat(functionContext, func)];
+
+	if(!func.hasFFI)
+		blockList = blockList.concat(initLocal());
 
 	if(func.inGotoComplex) {
 		blockList = blockList.concat(initGotoComplex());
