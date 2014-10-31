@@ -269,7 +269,7 @@ function dereferenceAndSet(ctx, ptr, content) {
 function specForComparison(comp) {
 	if(comp == "eq") {
 		return "=";
-	} else if(comp == "neq") {
+	} else if(comp == "ne") {
 		return "!=";
 	} else if(comp == "slt" || comp == "ult") {
 		return "<";
