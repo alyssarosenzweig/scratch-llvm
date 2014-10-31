@@ -15,6 +15,8 @@ var regexs = {
 	load: /^load ([^ ]+) (.+)/,
 	add: /^add ([^ ]+) ([^,]+), (.+)/,
 	sub: /^sub ([^ ]+) ([^,]+), (.+)/,
+	mul: /^mul ([^ ]+) ([^,]+), (.+)/,
+	div: /^div ([^ ]+) ([^,]+), (.+)/,
 	icmp: /^icmp ([^ ]+) ([^ ]+) ([^,]+), (.+)/,
 
 	localSet: /^\s+%([^ ]+) = (.+)/,
@@ -160,6 +162,26 @@ function parse(file, ffi) {
 					block.val = {
 						type: "arithmetic",
 						operation: "-",
+						operand1: m[2],
+						operand2: m[3]
+					};
+
+					functionBlock.code.push(block);
+				} else if(regexs.mul.test(m[2])) {
+					var m = m[2].match(regexs.add);
+					block.val = {
+						type: "arithmetic",
+						operation: "*",
+						operand1: m[2],
+						operand2: m[3]
+					};
+
+					functionBlock.code.push(block);
+				} else if(regexs.div.test(m[2])) {
+					var m = m[2].match(regexs.add);
+					block.val = {
+						type: "arithmetic",
+						operation: "/",
 						operand1: m[2],
 						operand2: m[3]
 					};
