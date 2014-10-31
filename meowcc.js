@@ -54,12 +54,11 @@ meow.addVariable("return value", 0);
 
 meow.addScript([
 		["whenGreenFlag"],
-		["call", "init tty"],
+		["deleteLine:ofList:", "last", "# of locals"],
+		["deleteLine:ofList:", "last", "Stack"],
+		["deleteLine:ofList:", "last", "TTY"],
+		["append:toList:", "", "TTY"],
 		["call", "@main"] // TODO: argc + argv
-	])
-meow.addScript([
-		["procDef", "init tty", [], [], false],
-		["append:toList:", "", "TTY"]
 	])
 
 if(process.argv[3]) {
