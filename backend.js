@@ -182,6 +182,10 @@ function getOffset(ctx, value) {
 }
 
 function stackPosFromOffset(offset) {
+	if(offset == 0) {
+		return "last";
+	}
+
 	return ["-", ["lineCountOfList:", "Stack"], offset];
 }
 
