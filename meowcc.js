@@ -54,9 +54,10 @@ meow.addVariable("return value", 0);
 
 meow.addScript([
 		["whenGreenFlag"],
-		["deleteLine:ofList:", "last", "# of locals"],
-		["deleteLine:ofList:", "last", "Stack"],
-		["deleteLine:ofList:", "last", "TTY"],
+		["deleteLine:ofList:", "all", "# of locals"],
+		["deleteLine:ofList:", "all", "Label Stack"],
+		["deleteLine:ofList:", "all", "Stack"],
+		["deleteLine:ofList:", "all", "TTY"],
 		["append:toList:", "", "TTY"],
 		["call", "@main"] // TODO: argc + argv
 	])
