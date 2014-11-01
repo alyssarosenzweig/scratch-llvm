@@ -31,7 +31,6 @@ tty.classicTTY();
 meow.lists.push(tty);
 
 meow.addList("Stack");
-meow.addList("# of locals");
 meow.addList("Label Stack");
 
 var alphabet = "";
@@ -54,7 +53,6 @@ meow.addVariable("return value", 0);
 
 meow.addScript([
 		["whenGreenFlag"],
-		["deleteLine:ofList:", "all", "# of locals"],
 		["deleteLine:ofList:", "all", "Label Stack"],
 		["deleteLine:ofList:", "all", "Stack"],
 		["deleteLine:ofList:", "all", "TTY"],

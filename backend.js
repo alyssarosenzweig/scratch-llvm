@@ -43,9 +43,6 @@ module.exports.compileFunction = function(func) {
 
 	var blockList = [module.exports.generateFunctionHat(functionContext, func)];
 
-	if(!func.hasFFI)
-		blockList = blockList.concat(initLocal());
-
 	if(func.inGotoComplex) {
 		blockList = blockList.concat(initGotoComplex());
 	}
@@ -219,11 +216,6 @@ function stackPosFromOffset(offset) {
 }
 
 // higher-level code generation
-function initLocal() {
-	return [
-		["append:toList:", "0", "# of locals"]
-	]
-}
 
 function allocateLocal(ctx, val, name) {
 	if(name) {
