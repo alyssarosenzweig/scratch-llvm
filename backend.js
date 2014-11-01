@@ -226,11 +226,16 @@ function allocateLocal(ctx, val, name) {
 	];
 }
 
-function freeLocals() {
+function freeStack(num) {
 	return [
-		["doRepeat", ["getLine:ofList:", "last", "# of locals"], [["deleteLine:ofList:", "last", "Stack"]]],
-		["deleteLine:ofList:", "last", "# of locals"]
+		["doRepeat", num, [["deleteLine:ofList:", "last", "Stack"]]],
 	];
+}
+
+function freeLocals() {
+	return freeStack(["getLine:ofList:", "last", "# of locals"]).concat([
+		["deleteLine:ofList:", "last", "# of locals"]
+	]);
 }
 
 function fetchByName(ctx, n) {
