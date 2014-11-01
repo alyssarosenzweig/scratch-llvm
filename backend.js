@@ -34,7 +34,10 @@ module.exports.compileFunction = function(func) {
 		locals: {},
 		localDepth: 0,
 		params: [],
-		gotoInit: false
+		gotoInit: false,
+		globalToFree: 0,
+		scopeToFree: 0,
+		scoped: false
 	}
 
 	var blockList = [module.exports.generateFunctionHat(functionContext, func)];
@@ -220,8 +223,13 @@ function allocateLocal(ctx, val, name) {
 		ctx.locals[name] = ++ctx.localDepth;
 	}
 
+	ctx.globalToFree++;
+	
+	if(ctx.scoped) {
+		ctx.scopeToFree++;
+	}
+
 	return [
-		["setLine:ofList:to:", "last", "# of locals", ["+", ["getLine:ofList:", "last", "# of locals"], 1]],
 		["append:toList:", val, "Stack"]
 	];
 }
@@ -232,8 +240,8 @@ function freeStack(num) {
 	];
 }
 
-function freeLocals() {
-	return freeStack(["getLine:ofList:", "last", "# of locals"]).concat([
+function freeLocals(ctx) {
+	return freeStack(ctx.globalToFree).concat([
 		["deleteLine:ofList:", "last", "# of locals"]
 	]);
 }
@@ -250,7 +258,7 @@ function fetchByName(ctx, n) {
 }
 
 function returnBlock(ctx, val) {
-	var proc = freeLocals();
+	var proc = freeLocals(ctx);
 	
 	if(ctx.gotoComplex) {
 		proc = proc.concat(cleanGotoComplex());
