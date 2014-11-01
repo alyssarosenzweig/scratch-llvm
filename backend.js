@@ -46,10 +46,21 @@ module.exports.compileFunction = function(func) {
 		blockList = blockList.concat(initGotoComplex());
 	}
 
-	for(var i = 0; i < func.code.length; ++i) {
+	for(var i = 0; i < func.code.length;) {
 		console.log(func.code[i]);
 
+		var iGain = 1;
+
 		var hasGotoComplex = functionContext.gotoComplex && functionContext.gotoComplex.okToUse && functionContext.gotoComplex.active; // this MUST be before compileInstruction for branching to work
+		
+		// optimize out alloca calls
+		if(func.code[i].type == "set" && func.code[i].computation == [] && func.code[i].value == 0 &&
+			func.code[i+1].type == "store" && func.code[i+1].destination.value == func.code[i].name) {
+
+			func.code[i].value = func.code[i+1].src.value;
+			iGain = 1;
+		}
+
 		var instruction = compileInstruction(functionContext, func.code[i]);
 
 		if(!functionContext.gotoInit && functionContext.gotoComplex && functionContext.gotoComplex.okToUse) {
@@ -66,6 +77,8 @@ module.exports.compileFunction = function(func) {
 		} else {
 			blockList = blockList.concat(instruction);
 		}
+
+		i += iGain;
 	}
 
 	//blockList = blockList.concat(returnBlock());
