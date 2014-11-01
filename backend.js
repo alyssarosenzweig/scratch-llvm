@@ -58,7 +58,23 @@ module.exports.compileFunction = function(func) {
 			func.code[i+1].type == "store" && func.code[i+1].destination.value == func.code[i].name) {
 
 			func.code[i].value = func.code[i+1].src.value;
-			iGain = 1;
+			iGain++;
+		}
+
+		// optimize out icmp in conditional branch
+		if(func.code[i].type == "set" && func.code[i].val.type == "comparison" &&
+			func.code[i+1].type == "branch" && func.code[i+1].conditional && func.code[i+1].condition == func.code[i].name) {
+
+			func.code[i] = {
+				type: "branch",
+				conditional: true,
+				dest: func.code[i+1].dest,
+				falseDest: func.code[i+1].falseDest,
+				condition: icmpBlock(functionContext, func.code[i]),
+				rawCondition: true
+			};
+
+			iGain++;
 		}
 
 		var instruction = compileInstruction(functionContext, func.code[i]);
@@ -106,21 +122,7 @@ function compileInstruction(ctx, block) {
 		} else if(block.val.type == "arithmetic") {
 			val = [block.val.operation, fetchByName(ctx, block.val.operand1), fetchByName(ctx, block.val.operand2)];
 		} else if(block.val.type == "comparison") {
-			var spec = specForComparison(block.val.operation);
-			var negate = false;
-
-			if(spec[0] == "!") {
-				negate = true;
-				spec = spec.slice(1);
-			}
-
-			var b = [spec, fetchByName(ctx, block.val.left), fetchByName(ctx, block.val.right)];
-
-			if(negate) {
-				b = ["not", b];
-			}
-
-			val = castToNumber(b);
+			val = icmpBlock(ctx, val);
 		}
 
 		return compileInstruction(ctx, block.computation)
@@ -157,8 +159,10 @@ function compileInstruction(ctx, block) {
 		ctx.gotoComplex.active = false;
 
 		if(block.conditional) {
+			var cond = block.rawCondition ? block.condition : ["=", fetchByName(ctx, block.condition), 1];
+
 			return [
-				["doIfElse", ["=", fetchByName(ctx, block.condition), 1], absoluteBranch(block.dest.slice(1)), absoluteBranch(block.falseDest.slice(1))]
+				["doIfElse", cond, absoluteBranch(block.dest.slice(1)), absoluteBranch(block.falseDest.slice(1))]
 			];
 		} else {
 			return absoluteBranch(block.dest);
@@ -195,6 +199,7 @@ function getOffset(ctx, value) {
 }
 
 function stackPosFromOffset(offset) {
+	// optimize zero-index
 	if(offset == 0) {
 		return "last";
 	}
@@ -320,4 +325,22 @@ function absoluteBranch(dest) {
 
 function castToNumber(b) {
 	return ["*", b, 1];
+}
+
+function icmpBlock(ctx, block) {
+	var spec = specForComparison(block.val.operation);
+	var negate = false;
+
+	if(spec[0] == "!") {
+		negate = true;
+		spec = spec.slice(1);
+	}
+
+	var b = [spec, fetchByName(ctx, block.val.left), fetchByName(ctx, block.val.right)];
+
+	if(negate) {
+		b = ["not", b];
+	}
+
+	return castToNumber(b);
 }
