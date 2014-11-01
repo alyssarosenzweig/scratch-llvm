@@ -32,7 +32,8 @@ module.exports.compileFunction = function(func) {
 
 	var functionContext = {
 		locals: {},
-		localDepth: 0,
+		globalLocalDepth: 0,
+		scopedLocalDepth: 0,
 		params: [],
 		gotoInit: false,
 		globalToFree: 0,
@@ -144,7 +145,6 @@ function compileInstruction(ctx, block) {
 
 		//return [ctx.gotoComplex.forever];
 	} else if(block.type == "label") {
-		console.log("Label "+ctx.scoped);
 		if(ctx.scoped) {
 			ctx.gotoComplex.currentContext[2] =
 				ctx.gotoComplex.currentContext[2].concat(freeLocals(ctx));
@@ -206,7 +206,7 @@ function formatValue(ctx, type, value) {
 }
 
 function getOffset(ctx, value) {
-	return ctx.localDepth - ctx.locals[value];
+	return ctx.globalLocalDepth + ctx.scopedLocalDepth - ctx.locals[value];
 }
 
 function stackPosFromOffset(offset) {
@@ -228,7 +228,16 @@ function initLocal() {
 function allocateLocal(ctx, val, name) {
 	if(name) {
 		console.log(name+","+val);
-		ctx.locals[name] = ++ctx.localDepth;
+		
+		var depth = 0;
+
+		if(ctx.scoped) {
+			depth = ctx.globalLocalDepth + (++ctx.scopedLocalDepth);
+		} else {
+			depth = ctx.globalLocalDepth;
+		}
+
+		ctx.locals[name] = depth;
 	}
 
 	ctx.globalToFree++;
@@ -262,14 +271,14 @@ function freeLocals(ctx) {
 }
 
 function fetchByName(ctx, n) {
-	if(ctx.locals[n])
+	if(ctx.locals[n] !== undefined)
 		return ["getLine:ofList:", stackPosFromOffset(getOffset(ctx, n)), "Stack"];
 	else if(ctx.params.indexOf(n) > -1)
 		return ["getParam", n, "r"];
 	else if( (n * 1) == n)
 		return n
 	else
-		return 0;
+		return ["undefined"];
 }
 
 function returnBlock(ctx, val) {
