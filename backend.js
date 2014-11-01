@@ -255,6 +255,7 @@ function freeLocals(ctx) {
 	if(ctx.scoped) {
 		numToFree = ctx.scopeToFree;
 		ctx.scopeToFree = 0;
+		ctx.scopedLocalDepth = 0;
 	}
 
 	return freeStack(numToFree);
