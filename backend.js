@@ -241,7 +241,14 @@ function freeStack(num) {
 }
 
 function freeLocals(ctx) {
-	return freeStack(ctx.globalToFree).concat([
+	var numToFree = ctx.globalToFree;
+
+	if(ctx.scoped) {
+		numToFree = ctx.scopeToFree;
+		ctx.scopeToFree = 0;
+	}
+
+	return freeStack(numToFree).concat([
 		["deleteLine:ofList:", "last", "# of locals"]
 	]);
 }
