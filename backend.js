@@ -144,6 +144,14 @@ function compileInstruction(ctx, block) {
 
 		//return [ctx.gotoComplex.forever];
 	} else if(block.type == "label") {
+		console.log("Label "+ctx.scoped);
+		if(ctx.scoped) {
+			ctx.gotoComplex.currentContext[2] =
+				ctx.gotoComplex.currentContext[2].concat(freeLocals(ctx));
+		}
+
+		ctx.scoped = true;
+
 		var chunk = ["doIfElse", ["=", getCurrentLabel(), block.label], [], []];
 
 		ctx.gotoComplex.okToUse = true;
