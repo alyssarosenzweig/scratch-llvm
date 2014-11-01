@@ -261,15 +261,11 @@ function freeLocals(ctx) {
 	var numToFree = ctx.globalToFree;
 
 	if(ctx.scoped) {
-		var num = ctx.scopeToFree;
+		numToFree = ctx.scopeToFree;
 		ctx.scopeToFree = 0;
-
-		return freeStack(num);
-	} else {
-		return freeStack(ctx.globalToFree).concat([
-			["deleteLine:ofList:", "last", "# of locals"]
-		]);
 	}
+
+	return freeStack(numToFree);
 }
 
 function fetchByName(ctx, n) {
