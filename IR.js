@@ -23,7 +23,9 @@ var regexs = {
 
 	label: /; <label>:(\d+)/,
 	absoluteBranch: /\s+br label (.+)/,
-	conditionalBranch: /\s+br i1 ([^,]+), label ([^,]+), label (.+)/
+	conditionalBranch: /\s+br i1 ([^,]+), label ([^,]+), label (.+)/,
+
+	globalVar: /@([^ ]+) = (private )?(unnamed_addr )?(constant )?((\[([^\]])+\])|([^ ]+))(.+)/
 }
 
 function parse(file, ffi) {
@@ -104,6 +106,14 @@ function parse(file, ffi) {
 				})
 
 				console.log(m);
+			} else if(regexs.globalVar.test(lines[i])) {
+				var m = lines[i].match(regexs.globalVar);
+
+				var name = m[1].trim();
+				var type = m[5].trim();
+				var val = m[9].trim();
+
+				console.log(type+" "+name+" = "+val);
 			}
 		} else {
 			if(lines[i] == "}") {
