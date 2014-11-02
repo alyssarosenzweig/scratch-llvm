@@ -328,3 +328,32 @@ function extractTypeValue(glob) {
 		var val = glob.slice(type.length+1);
 		return [type, val];
 }
+
+function hexToDec(digit) {
+	return (digit >= '0' && digit <= '9') ?
+				digit - '0'
+			: (digit >= 'A' && digit <= 'F') ?
+				digit - 'A'
+			: (digit >= 'a' && digit <= 'f') ?
+				digit - 'a'
+			: 0;
+}
+
+function hexPairToByte(pair) {
+	return ( hexToDec(pair[0]) << 4) | hexToDec(pair[1]);
+}
+
+function extracti8ArrayFromString(str) {
+	var strData = str.slice(2, -1);
+	var i8array = [];
+
+	for(var i = 0; i < strData.length; ++i) {
+		if(strData[i] == "\\") {
+			i8array.push(hexPairToByte(strData[++i] + strData[++i]));
+		} else {
+			i8array.push(strData.charCodeAt(i));
+		}
+	}
+
+	return i8array;	
+}
