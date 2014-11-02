@@ -359,3 +359,13 @@ function extracti8ArrayFromString(str) {
 
 	return i8array;	
 }
+
+function extractArrayLiteral(str) {
+	if(str[0] == 'c') {
+		return extracti8ArrayFromString(str);
+	} else if(str[0] == '[') {
+		return JSON.parse(str);
+	} else {
+		return [];
+	}
+}
