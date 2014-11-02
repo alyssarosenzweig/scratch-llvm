@@ -113,6 +113,8 @@ function parse(file, ffi) {
 				var type = m[5].trim();
 				var val = m[9].trim();
 
+				console.log(extracti8ArrayFromString(val));
+
 				console.log(type+" "+name+" = "+val);
 			}
 		} else {
@@ -331,11 +333,11 @@ function extractTypeValue(glob) {
 
 function hexToDec(digit) {
 	return (digit >= '0' && digit <= '9') ?
-				digit - '0'
+				digit * 1
 			: (digit >= 'A' && digit <= 'F') ?
-				digit - 'A'
+				(digit.charCodeAt(0) - 65) + 10
 			: (digit >= 'a' && digit <= 'f') ?
-				digit - 'a'
+				(digit.charCodeAt(0) - 96) + 10
 			: 0;
 }
 
