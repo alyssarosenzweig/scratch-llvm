@@ -118,7 +118,7 @@ function parse(file, ffi) {
 					name: name,
 					type: type,
 					val: val
-				})
+				});
 			}
 		} else {
 			if(lines[i] == "}") {
