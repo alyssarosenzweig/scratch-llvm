@@ -44,7 +44,8 @@ function parse(file, ffi) {
 	var lines = file.split('\n');
 
 	var mod = {
-		functions: []
+		functions: [],
+		globals: []
 	};
 
 	var inFunctionBlock = false;
@@ -76,7 +77,7 @@ function parse(file, ffi) {
 					funcName: funcName,
 					code: [],
 					labels: {},
-					inGotoComplex: false,
+					inGotoComplex: false
 				};
 				inFunctionBlock = true;
 			} else if(regexs.declare.test(lines[i])) {
@@ -113,9 +114,11 @@ function parse(file, ffi) {
 				var type = m[5].trim();
 				var val = m[9].trim();
 
-				console.log(extracti8ArrayFromString(val));
-
-				console.log(type+" "+name+" = "+val);
+				mod.globals.push({
+					name: name,
+					type: type,
+					val: val
+				})
 			}
 		} else {
 			if(lines[i] == "}") {
