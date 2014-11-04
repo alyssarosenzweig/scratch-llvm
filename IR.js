@@ -25,7 +25,9 @@ var regexs = {
 	absoluteBranch: /\s+br label (.+)/,
 	conditionalBranch: /\s+br i1 ([^,]+), label ([^,]+), label (.+)/,
 
-	globalVar: /@([^ ]+) = (private )?(unnamed_addr )?(constant )?((\[([^\]])+\])|([^ ]+))(.+)/
+	globalVar: /@([^ ]+) = (private )?(unnamed_addr )?(constant )?((\[([^\]])+\])|([^ ]+))(.+)/,
+
+	inlineInstruction: /([a-zA-Z ]+)\(([^\(]+)\)/
 }
 
 function parse(file, ffi) {
