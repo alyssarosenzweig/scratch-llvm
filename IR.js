@@ -381,7 +381,10 @@ function extractArrayLiteral(str) {
 }
 
 function formatValue(type, value) {
-	if(type[0] == '[') {
+	if(regexs.inlineInstruction.test(value)) {
+		console.log("Inline instruction detected");
+		console.log(value.match(regexs.inlineInstruction));
+	} else if(type[0] == '[') {
 		return extractArrayLiteral(value);
 	}
 
