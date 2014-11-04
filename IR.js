@@ -112,7 +112,12 @@ function parse(file, ffi) {
 
 				var name = m[1].trim();
 				var type = m[5].trim();
-				var val = formatValue(type, m[9].trim());
+
+				var val = null;
+				
+				if(m[9]) {
+					val = formatValue(type, m[9].trim());
+				}
 
 				mod.globals.push({
 					name: name,
