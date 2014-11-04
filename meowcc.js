@@ -34,7 +34,22 @@ meow.lists.push(tty);
 
 meow.addList("Stack");
 meow.addList("Label Stack");
-meow.addList("Data");
+
+var data = new (require("./meow")).ListTuple("Data");
+var dataLength = 0;
+
+for(var i = 0; i < IR.globals.length; ++i) {
+	var global = IR.globals[i];
+
+	if(Array.isArray(global.val)) {
+		dataLength += global.val.length;
+		data.contents = data.contents.concat(global.val);
+	} else {
+		console.log("Warning: non-array global found. TODO: actually implement this");
+	}
+}
+
+meow.lists.push(data);
 
 var alphabet = "";
 for(var i = 0; i < 256; ++i) {
