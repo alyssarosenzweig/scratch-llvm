@@ -34,6 +34,7 @@ meow.lists.push(tty);
 
 meow.addList("Stack");
 meow.addList("Label Stack");
+meow.addList("Data");
 
 var alphabet = "";
 for(var i = 0; i < 256; ++i) {
