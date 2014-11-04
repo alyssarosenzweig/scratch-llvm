@@ -337,7 +337,7 @@ function callBlock(m) {
 
 function extractTypeValue(glob) {
 		var type = glob.split(' ')[0];
-		var val = glob.slice(type.length+1);
+		var val = formatValue(type, glob.slice(type.length+1));
 		return [type, val];
 }
 
