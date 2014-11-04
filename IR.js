@@ -372,3 +372,11 @@ function extractArrayLiteral(str) {
 		return [];
 	}
 }
+
+function formatValue(type, value) {
+	if(type[0] == '[') {
+		return extractArrayLiteral(value);
+	}
+
+	return value;
+}
