@@ -44,6 +44,7 @@ for(var i = 0; i < IR.globals.length; ++i) {
 	if(Array.isArray(global.val)) {
 		dataLength += global.val.length;
 		data.contents = data.contents.concat(global.val);
+		global.ptr = dataLength;
 	} else {
 		console.log("Warning: non-array global found. TODO: actually implement this");
 	}
