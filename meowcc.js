@@ -15,8 +15,6 @@ var meow = require("./meow").instance();
 var backend = require("./backend");
 
 backend.ffi["@putch"] = [
-	//["doAsk", ["concatenate:with:", "@putch ", ["getParam", "param0", "r"]]]
-
 	["doIfElse",
 					["=", ["getParam", "param0", "r"], "13"],
 					[["append:toList:", "", "TTY"]],
@@ -27,15 +25,15 @@ backend.ffi["@putch"] = [
 ];
 
 backend.ffi["@puts"] = [
-	["doIfElse",
-		["=", ["getParam", "param0", "r"], "13"],
-		[["append:toList:", "", "TTY"]],
-		[["setLine:ofList:to:",
-				["lineCountOfList:", "TTY"],
-				"TTY",
-				["concatenate:with:",
-					["getLine:ofList:", ["lineCountOfList:", "TTY"], "TTY"],
-					["letter:of:", ["+", ["getParam", "param0", "r"], 1], ["readVariable", "alphabet"]]]]]]
+	["setVar:to:", "_temp0", 0],
+	["doUntil",
+		["=",
+			["getLine:ofList:", ["+", ["getParam", "param0", "r"], ["readVariable", "_temp0"]], "Data"],
+			"0"],
+		[["call",
+				"@putch %s",
+				["getLine:ofList:", ["+", ["getParam", "param0", "r"], ["readVariable", "_temp0"]], "Data"]],
+			["changeVar:by:", "_temp0", 1]]]
 ];
 
 console.log(JSON.stringify(IR));
@@ -81,6 +79,7 @@ for(var i = 0; i < IR.functions.length; ++i) {
 }
 
 meow.addVariable("return value", 0);
+meow.addVariable("_temp0", 0);
 
 meow.addScript([
 		["whenGreenFlag"],
