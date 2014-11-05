@@ -50,11 +50,13 @@ var dataLength = 0;
 
 IR.rootGlobal = {};
 
+var dataOffset = 1;
+
 for(var i = 0; i < IR.globals.length; ++i) {
 	var global = IR.globals[i];
 
 	if(Array.isArray(global.val)) {
-		global.ptr = dataLength;
+		global.ptr = dataLength + dataOffset;
 		dataLength += global.val.length;
 		data.contents = data.contents.concat(global.val);
 	} else {
