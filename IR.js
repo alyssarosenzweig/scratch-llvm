@@ -382,11 +382,16 @@ function extractArrayLiteral(str) {
 
 function formatValue(type, value) {
 	if(regexs.inlineInstruction.test(value)) {
-		console.log("Inline instruction detected");
-		console.log(value.match(regexs.inlineInstruction));
+		var m = value.match(regexs.inlineInstruction);
+		return constantExpression(m[1].trim(), m[2]);
 	} else if(type[0] == '[') {
 		return extractArrayLiteral(value);
 	}
 
 	return value;
+}
+
+function constantExpression(func, params) {
+	console.log(func+"("+params+")");
+	return 0;
 }
