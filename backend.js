@@ -385,5 +385,5 @@ function LLVMType(str) {
 }
 
 function getTypeSize(type) {
-	return 4;
+	return type.typeSize;
 }
