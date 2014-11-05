@@ -401,8 +401,8 @@ function constantExpression(func, params) {
 		return {
 			type: "getelementptr",
 			base: {
-				type: plist[0].slice(-val.length+1),
-				val: val
+				type: plist[0].slice(0, -(val[0].length+1)),
+				val: val[0]
 			}
 		}
 	}
