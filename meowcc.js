@@ -54,9 +54,9 @@ for(var i = 0; i < IR.globals.length; ++i) {
 	var global = IR.globals[i];
 
 	if(Array.isArray(global.val)) {
+		global.ptr = dataLength;
 		dataLength += global.val.length;
 		data.contents = data.contents.concat(global.val);
-		global.ptr = dataLength;
 	} else {
 		console.log("Warning: non-array global found. TODO: actually implement this");
 	}
