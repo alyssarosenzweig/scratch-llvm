@@ -48,6 +48,8 @@ meow.addList("Label Stack");
 var data = new (require("./meow")).ListTuple("Data");
 var dataLength = 0;
 
+IR.rootGlobal = {};
+
 for(var i = 0; i < IR.globals.length; ++i) {
 	var global = IR.globals[i];
 
@@ -58,6 +60,8 @@ for(var i = 0; i < IR.globals.length; ++i) {
 	} else {
 		console.log("Warning: non-array global found. TODO: actually implement this");
 	}
+
+	IR.rootGlobal[global.name] = global;
 }
 
 meow.lists.push(data);
@@ -75,7 +79,7 @@ for(var i = 0; i < 256; ++i) {
 meow.addVariable("alphabet", alphabet);
 
 for(var i = 0; i < IR.functions.length; ++i) {
-	meow.addScript(backend.compileFunction(IR.functions[i]));
+	meow.addScript(backend.compileFunction(IR.functions[i], IR));
 }
 
 meow.addVariable("return value", 0);

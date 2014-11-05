@@ -27,7 +27,7 @@ module.exports.generateFunctionHat = function(functionContext, func) {
 
 }
 
-module.exports.compileFunction = function(func) {
+module.exports.compileFunction = function(func, IR) {
 	console.log("Compiling "+JSON.stringify(func)+"...");
 
 	var functionContext = {
@@ -38,7 +38,9 @@ module.exports.compileFunction = function(func) {
 		gotoInit: false,
 		globalToFree: 0,
 		scopeToFree: 0,
-		scoped: false
+		scoped: false,
+		globals: IR.globals,
+		rootGlobal: IR.rootGlobal
 	}
 
 	var blockList = [module.exports.generateFunctionHat(functionContext, func)];
@@ -195,6 +197,13 @@ function specifierForType(type) {
 function formatValue(ctx, type, value) { 
 	console.log("FORMAT: "+type+","+value);
 
+	if(typeof value == "object") {
+		if(value.type == "getelementptr") {
+			// fixme: necessary and proper implementation
+			return addressOf(ctx, value.base.val);
+		}
+	}
+
 	if(value[0] == '%') {
 		return fetchByName(ctx, value);
 	}
@@ -268,6 +277,14 @@ function fetchByName(ctx, n) {
 		return ["getParam", n, "r"];
 	else if( (n * 1) == n)
 		return n
+	else
+		return ["undefined"];
+}
+
+function addressOf(ctx, n) {
+	console.log(ctx.rootGlobal[n.slice(1)]);
+	if(ctx.rootGlobal[n.slice(1)])
+		return ctx.rootGlobal[n.slice(1)].ptr;
 	else
 		return ["undefined"];
 }
