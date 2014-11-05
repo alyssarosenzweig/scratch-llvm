@@ -372,3 +372,7 @@ function icmpBlock(ctx, block) {
 
 	return castToNumber(b);
 }
+
+function getTypeSize(type) {
+	return 4;
+}
