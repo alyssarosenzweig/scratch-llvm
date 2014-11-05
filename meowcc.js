@@ -16,7 +16,7 @@ var backend = require("./backend");
 
 backend.ffi["@putch"] = [
 	["doIfElse",
-					["=", ["getParam", "param0", "r"], "13"],
+					["|", ["=", ["getParam", "param0", "r"], "13"], ["=", ["getParam", "param0", "r"], "10"]],
 					[["append:toList:", "", "TTY"]],
 					[["setLine:ofList:to:",
 							["lineCountOfList:", "TTY"],
