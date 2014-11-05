@@ -381,6 +381,10 @@ function LLVMType(str) {
 		this.arraySize = str[0] * 1;
 		this.elementType = new LLVMType(str[1]);
 		this.typeSize = this.arraySize * getTypeSize(this.elementType);
+	} else if(/i\d+/.test(str)) {
+		this.isInteger = true;
+		this.integerBits = str.slice(1);
+		this.typeSize = getIntegerSize(this.integerBits);
 	}
 }
 
