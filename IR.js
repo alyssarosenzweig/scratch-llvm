@@ -393,5 +393,18 @@ function formatValue(type, value) {
 
 function constantExpression(func, params) {
 	console.log(func+"("+params+")");
+	if(func == "getelementptr inbounds") {
+		// TODO address computation
+		var plist = params.split(",");
+		var val = plist[0].split(" ").slice(-1);
+
+		return {
+			type: "getelementptr",
+			base: {
+				type: plist[0].slice(-val.length+1),
+				val: val
+			}
+		}
+	}
 	return 0;
 }
