@@ -5,7 +5,7 @@ front-end to the compiler
 var IR = (require('./IR'))(
 	{
 		filename: process.argv[2],
-		ffi: ["@putch"]
+		ffi: ["@putch", "@puts"]
 	}
 );
 
@@ -24,6 +24,18 @@ backend.ffi["@putch"] = [
 							["lineCountOfList:", "TTY"],
 							"TTY",
 							["concatenate:with:", ["getLine:ofList:", ["lineCountOfList:", "TTY"], "TTY"], ["letter:of:", ["+", ["getParam", "param0", "r"], 1], ["readVariable", "alphabet"]]]]]]
+];
+
+backend.ffi["@puts"] = [
+	["doIfElse",
+		["=", ["getParam", "param0", "r"], "13"],
+		[["append:toList:", "", "TTY"]],
+		[["setLine:ofList:to:",
+				["lineCountOfList:", "TTY"],
+				"TTY",
+				["concatenate:with:",
+					["getLine:ofList:", ["lineCountOfList:", "TTY"], "TTY"],
+					["letter:of:", ["+", ["getParam", "param0", "r"], 1], ["readVariable", "alphabet"]]]]]]
 ];
 
 console.log(JSON.stringify(IR));
