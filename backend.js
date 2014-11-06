@@ -225,7 +225,7 @@ function stackPosFromOffset(offset) {
 		return stackPtr();
 	}*/
 
-	return ["+", stackPtr(), offset];
+	return ["+", stackPtr(), offset + 1];
 }
 
 // higher-level code generation
