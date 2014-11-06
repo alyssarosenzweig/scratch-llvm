@@ -18,6 +18,7 @@ var regexs = {
 	mul: /^mul ([^ ]+) ([^,]+), (.+)/,
 	div: /^div ([^ ]+) ([^,]+), (.+)/,
 	icmp: /^icmp ([^ ]+) ([^ ]+) ([^,]+), (.+)/,
+	sext: /^sext i\d+ ([^ ]+) to i\d+/,
 
 	localSet: /^\s+%([^ ]+) = (.+)/,
 
@@ -220,6 +221,17 @@ function parse(file, ffi) {
 						operation: m[1],
 						left: m[3],
 						right: m[4]
+					}
+
+					functionBlock.code.push(block);
+				} else if(regexs.sext.test(m[2])) {
+					var m = m[2].match(regexs.sext);
+
+					block.val = {
+						type: "signext",
+						source: m[2],
+						originalType: m[1],
+						newType: m[3]
 					}
 
 					functionBlock.code.push(block);
