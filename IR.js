@@ -168,9 +168,12 @@ function parse(file, ffi) {
 					
 					functionBlock.code.push(block);
 				} else if(regexs.load.test(m[2])) {
+					var m = m[2].match(regexs.load);
+
 					block.val = {
 						type: "variable",
-						name: m[2].match(regexs.load)[2]
+						name: m[2],
+						type: m[1]
 					}
 
 					functionBlock.code.push(block);
