@@ -93,6 +93,16 @@ meow.addVariable(".data");
 
 meow.addScript([
 		["whenGreenFlag"],
+
+		["deleteLine:ofList:", "all", "DATA"],
+		["setVar:to:", "i", "1"],
+		["doRepeat",
+			65536,
+			[["append:toList:", ["*", ["getLine:ofList:", ["readVariable", "i"], ".rodata"], 1], "DATA"],
+				["changeVar:by:", "i", 1]]],
+		["setVar:to:", "sp", "65535"],
+		["setVar:to:", ".data", "1"],
+
 		["deleteLine:ofList:", "all", "Label Stack"],
 		["deleteLine:ofList:", "all", "Stack"],
 		["deleteLine:ofList:", "all", "TTY"],
