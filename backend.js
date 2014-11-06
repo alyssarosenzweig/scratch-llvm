@@ -287,6 +287,8 @@ function fetchByName(ctx, n) {
 	else if( (n * 1) == n)
 		return n
 	else
+		console.log("fetchByName undefined "+n);
+		console.log(ctx.locals);
 		return ["undefined"];
 }
 
@@ -295,6 +297,7 @@ function addressOf(ctx, n) {
 	if(ctx.rootGlobal[n.slice(1)])
 		return ctx.rootGlobal[n.slice(1)].ptr;
 	else
+		console.log("addressOf undefined "+n);
 		return ["undefined"];
 }
 
