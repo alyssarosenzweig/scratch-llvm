@@ -40,6 +40,7 @@ function parse(file, ffi) {
 	file = file.replace(/zeroext /g, "");
 	file = file.replace(/ zeroext/g, "");
 	file = file.replace(/signext /g, "");
+	file = file.replace(/ signext/g, "");
 	file = file.replace(/, align \d/g, "");
 	file = file.replace(/ nsw/g, "");
 	file = file.replace(/ nuw/g, "");
