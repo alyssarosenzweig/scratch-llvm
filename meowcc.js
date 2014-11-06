@@ -28,11 +28,11 @@ backend.ffi["@puts"] = [
 	["setVar:to:", "_temp0", 0],
 	["doUntil",
 		["=",
-			["getLine:ofList:", ["+", ["getParam", "param0", "r"], ["readVariable", "_temp0"]], "Data"],
+			["getLine:ofList:", ["+", ["getParam", "param0", "r"], ["readVariable", "_temp0"]], "DATA"],
 			"0"],
 		[["call",
 				"@putch %s",
-				["getLine:ofList:", ["+", ["getParam", "param0", "r"], ["readVariable", "_temp0"]], "Data"]],
+				["getLine:ofList:", ["+", ["getParam", "param0", "r"], ["readVariable", "_temp0"]], "DATA"]],
 			["changeVar:by:", "_temp0", 1]]]
 ];
 
