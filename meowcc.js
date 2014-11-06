@@ -87,6 +87,10 @@ for(var i = 0; i < IR.functions.length; ++i) {
 meow.addVariable("return value", 0);
 meow.addVariable("_temp0", 0);
 
+meow.addList("DATA");
+meow.addVariable("sp");
+meow.addVariable(".data");
+
 meow.addScript([
 		["whenGreenFlag"],
 		["deleteLine:ofList:", "all", "Label Stack"],
