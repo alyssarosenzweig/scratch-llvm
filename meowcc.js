@@ -91,16 +91,18 @@ meow.addList("DATA");
 meow.addVariable("sp");
 meow.addVariable(".data");
 
+var dataSectionSize = 1024;
+
 meow.addScript([
 		["whenGreenFlag"],
 
 		["deleteLine:ofList:", "all", "DATA"],
 		["setVar:to:", "i", "1"],
 		["doRepeat",
-			65536,
+			dataSectionSize,
 			[["append:toList:", ["*", ["getLine:ofList:", ["readVariable", "i"], ".rodata"], 1], "DATA"],
 				["changeVar:by:", "i", 1]]],
-		["setVar:to:", "sp", "65535"],
+		["setVar:to:", "sp", dataSectionSize - 1],
 		["setVar:to:", ".data", "1"],
 
 		["deleteLine:ofList:", "all", "Label Stack"],
