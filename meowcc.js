@@ -42,7 +42,6 @@ var tty = new (require("./meow")).ListTuple("TTY");
 tty.classicTTY();
 meow.lists.push(tty);
 
-meow.addList("Stack");
 meow.addList("Label Stack");
 
 var rodata = new (require("./meow")).ListTuple(".rodata");
@@ -106,7 +105,6 @@ meow.addScript([
 		["setVar:to:", ".data", "1"],
 
 		["deleteLine:ofList:", "all", "Label Stack"],
-		["deleteLine:ofList:", "all", "Stack"],
 		["deleteLine:ofList:", "all", "TTY"],
 		["append:toList:", "", "TTY"],
 		["call", "@main"] // TODO: argc + argv
