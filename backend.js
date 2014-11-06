@@ -221,11 +221,11 @@ function stackPtr() {
 
 function stackPosFromOffset(offset) {
 	// optimize zero-index
-	if(offset == 0) {
+	/*if(offset == 0) {
 		return stackPtr();
-	}
+	}*/
 
-	return ["-", stackPtr(), offset];
+	return ["+", stackPtr(), offset];
 }
 
 // higher-level code generation
@@ -252,13 +252,16 @@ function allocateLocal(ctx, val, name) {
 	}
 
 	return [
-		["setLine:ofList:to:", stackPtr(), "DATA", val]
+		["setLine:ofList:to:", stackPtr(), "DATA", val],
+		["changeVar:by:", "sp", -1]
 	];
 }
 
 function freeStack(num) {
+	console.log("Freeing stack");
 	return [
-		["doRepeat", num, [["deleteLine:ofList:", "last", "Stack"]]],
+		["changeVar:by:", "sp", num]
+		//["doRepeat", num, [["deleteLine:ofList:", "last", "Stack"]]],
 	];
 }
 
@@ -276,7 +279,7 @@ function freeLocals(ctx) {
 
 function fetchByName(ctx, n) {
 	if(ctx.locals[n] !== undefined)
-		return ["getLine:ofList:", stackPosFromOffset(getOffset(ctx, n)), "Stack"];
+		return ["getLine:ofList:", stackPosFromOffset(getOffset(ctx, n)), "DATA"];
 	else if(ctx.params.indexOf(n) > -1)
 		return ["getParam", n, "r"];
 	else if( (n * 1) == n)
@@ -331,7 +334,7 @@ function dereferenceAndSet(ctx, ptr, content) {
 		[
 			"setLine:ofList:to:",
 			stackPosFromOffset(getOffset(ctx, ptr)),
-			"Stack",
+			"DATA",
 			fetchByName(ctx, content)
 		]
 	];
