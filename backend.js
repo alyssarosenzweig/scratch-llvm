@@ -215,13 +215,17 @@ function getOffset(ctx, value) {
 	return ctx.globalLocalDepth + ctx.scopedLocalDepth - ctx.locals[value];
 }
 
+function stackPtr() {
+	return ["readVariable", "sp"];
+}
+
 function stackPosFromOffset(offset) {
 	// optimize zero-index
 	if(offset == 0) {
-		return "last";
+		return stackPtr();
 	}
 
-	return ["-", ["lineCountOfList:", "Stack"], offset];
+	return ["-", stackPtr(), offset];
 }
 
 // higher-level code generation
@@ -248,7 +252,7 @@ function allocateLocal(ctx, val, name) {
 	}
 
 	return [
-		["append:toList:", val, "Stack"]
+		["setLine:ofList:to:", stackPtr(), "DATA", val]
 	];
 }
 
