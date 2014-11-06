@@ -45,20 +45,20 @@ meow.lists.push(tty);
 meow.addList("Stack");
 meow.addList("Label Stack");
 
-var data = new (require("./meow")).ListTuple("Data");
-var dataLength = 0;
+var rodata = new (require("./meow")).ListTuple(".rodata");
+var rodataLength = 0;
 
 IR.rootGlobal = {};
 
-var dataOffset = 1;
+var rodataOffset = 1;
 
 for(var i = 0; i < IR.globals.length; ++i) {
 	var global = IR.globals[i];
 
 	if(Array.isArray(global.val)) {
-		global.ptr = dataLength + dataOffset;
-		dataLength += global.val.length;
-		data.contents = data.contents.concat(global.val);
+		global.ptr = rodataLength + rodataOffset;
+		rodataLength += global.val.length;
+		rodata.contents = rodata.contents.concat(global.val);
 	} else {
 		console.log("Warning: non-array global found. TODO: actually implement this");
 	}
@@ -66,7 +66,7 @@ for(var i = 0; i < IR.globals.length; ++i) {
 	IR.rootGlobal[global.name] = global;
 }
 
-meow.lists.push(data);
+meow.lists.push(rodata);
 
 var alphabet = "";
 for(var i = 0; i < 256; ++i) {
