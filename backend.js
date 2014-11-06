@@ -128,6 +128,8 @@ function compileInstruction(ctx, block) {
 			val = icmpBlock(ctx, val);
 		} else if(block.val.type == "sext") {
 			val = signExtend(ctx, block.val);
+		} else if(block.val.type == "addressOf") { // todo: full getelementptr implementation
+			val = addressOf(ctx, block.val.base.name);
 		}
 
 		return compileInstruction(ctx, block.computation)
