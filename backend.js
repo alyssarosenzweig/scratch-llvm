@@ -126,6 +126,8 @@ function compileInstruction(ctx, block) {
 			val = [block.val.operation, fetchByName(ctx, block.val.operand1), fetchByName(ctx, block.val.operand2)];
 		} else if(block.val.type == "comparison") {
 			val = icmpBlock(ctx, val);
+		} else if(block.val.type == "sext") {
+			val = signExtend(ctx, block.val);
 		}
 
 		return compileInstruction(ctx, block.computation)
@@ -395,4 +397,9 @@ function icmpBlock(ctx, block) {
 	}
 
 	return castToNumber(b);
+}
+
+function signExtend(ctx, block) {
+	// TODO: once we support typing correctly, sign extend will need a proper implementation too
+	return [fetchByName(block.source)];
 }
