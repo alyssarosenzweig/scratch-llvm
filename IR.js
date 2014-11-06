@@ -19,6 +19,7 @@ var regexs = {
 	div: /^div ([^ ]+) ([^,]+), (.+)/,
 	icmp: /^icmp ([^ ]+) ([^ ]+) ([^,]+), (.+)/,
 	sext: /^sext i\d+ ([^ ]+) to i\d+/,
+	getelementptr: /^getelementptr (inbounds )? ([^ ]+) ([^,]+), ([^ ]+) (.+),
 
 	localSet: /^\s+%([^ ]+) = (.+)/,
 
@@ -236,6 +237,19 @@ function parse(file, ffi) {
 						source: m[2],
 						originalType: m[1],
 						newType: m[3]
+					}
+
+					functionBlock.code.push(block);
+				} else if(regexs.getelementptr.test(m[2])) {
+					console.log("getelementptr todo");
+
+					var m = m[2].match(regexs.getelementptr);
+
+					block.val = {
+						type: "addressOf",
+						base: {
+							name: m[2]
+						}
 					}
 
 					functionBlock.code.push(block);
