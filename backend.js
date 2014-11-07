@@ -28,8 +28,6 @@ module.exports.generateFunctionHat = function(functionContext, func) {
 }
 
 module.exports.compileFunction = function(func, IR) {
-	console.log("Compiling "+JSON.stringify(func)+"...");
-
 	var functionContext = {
 		locals: {},
 		globalLocalDepth: 0,
@@ -50,8 +48,6 @@ module.exports.compileFunction = function(func, IR) {
 	}
 
 	for(var i = 0; i < func.code.length;) {
-		console.log(func.code[i]);
-
 		var iGain = 1;
 
 		var hasGotoComplex = functionContext.gotoComplex && functionContext.gotoComplex.okToUse && functionContext.gotoComplex.active; // this MUST be before compileInstruction for branching to work
@@ -115,8 +111,6 @@ function compileInstruction(ctx, block) {
 		return module.exports.ffi[block.ffiBlock];
 	} else if(block.type == "set") {
 		var val = 0;
-
-		console.log("SET: "+JSON.stringify(block));
 
 		if(block.val.type == "return value") {
 			val = ["readVariable", "return value"];
@@ -188,7 +182,6 @@ function compileInstruction(ctx, block) {
 
 // fixme: stub
 function defaultForType(type) {
-	console.log(type);
 	return 0;
 }
 
@@ -199,8 +192,6 @@ function specifierForType(type) {
 
 // fixme: stub
 function formatValue(ctx, type, value) { 
-	console.log("FORMAT: "+type+","+value);
-
 	if(typeof value == "object") {
 		if(value.type == "getelementptr") {
 			// fixme: necessary and proper implementation
@@ -235,9 +226,7 @@ function stackPosFromOffset(offset) {
 // higher-level code generation
 
 function allocateLocal(ctx, val, name) {
-	if(name) {
-		console.log(name+","+val);
-		
+	if(name) {		
 		var depth = 0;
 
 		if(ctx.scoped) {
@@ -262,7 +251,6 @@ function allocateLocal(ctx, val, name) {
 }
 
 function freeStack(num) {
-	console.log("Freeing stack");
 	return [
 		["changeVar:by:", "sp", num]
 		//["doRepeat", num, [["deleteLine:ofList:", "last", "Stack"]]],
@@ -295,7 +283,6 @@ function fetchByName(ctx, n) {
 }
 
 function addressOf(ctx, n) {
-	console.log(ctx.rootGlobal[n.slice(1)]);
 	if(ctx.rootGlobal[n.slice(1)])
 		return ctx.rootGlobal[n.slice(1)].ptr;
 	else

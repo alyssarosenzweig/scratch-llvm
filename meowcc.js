@@ -9,8 +9,6 @@ var IR = (require('./IR'))(
 	}
 );
 
-console.log(IR.globals);
-
 var meow = require("./meow").instance();
 var backend = require("./backend");
 
@@ -35,8 +33,6 @@ backend.ffi["@puts"] = [
 				["getLine:ofList:", ["+", ["getParam", "param0", "r"], ["readVariable", "_temp0"]], "DATA"]],
 			["changeVar:by:", "_temp0", 1]]]
 ];
-
-console.log(JSON.stringify(IR));
 
 var tty = new (require("./meow")).ListTuple("TTY");
 tty.classicTTY();
@@ -113,5 +109,5 @@ meow.addScript([
 if(process.argv[3]) {
 	meow.upload(process.argv[3], 'v426', process.argv[4], process.argv[5]);
 } else {
-	console.log(JSON.stringify(meow.serialize()));
+	//console.log(JSON.stringify(meow.serialize()));
 }

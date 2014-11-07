@@ -111,7 +111,6 @@ function parse(file, ffi) {
 					hasFFI: hasFFI
 				})
 
-				console.log(m);
 			} else if(regexs.globalVar.test(lines[i])) {
 				var m = lines[i].match(regexs.globalVar);
 
@@ -147,7 +146,6 @@ function parse(file, ffi) {
 				});
 			} else if(regexs.localSet.test(lines[i])) {
 				var m = lines[i].match(regexs.localSet);
-				console.log(m);
 
 				var block = {
 					type: "set",
@@ -422,7 +420,6 @@ function formatValue(type, value) {
 }
 
 function constantExpression(func, params) {
-	console.log(func+"("+params+")");
 	if(func == "getelementptr inbounds") {
 		// TODO address computation
 		var plist = params.split(",");
@@ -435,6 +432,9 @@ function constantExpression(func, params) {
 				val: val[0]
 			}
 		}
+	} else {
+		console.log("Unknown constantExpression");
+		console.log(func+"("+params+")");
 	}
 	return 0;
 }
