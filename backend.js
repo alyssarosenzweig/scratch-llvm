@@ -115,7 +115,6 @@ function compileInstruction(ctx, block) {
 		if(block.val.type == "return value") {
 			val = ["readVariable", "return value"];
 		} else if(block.val.type == "variable") {
-			console.log(block.val);
 			val = fetchByName(ctx, block.val.name);
 		} else if(block.val.type == "arithmetic") {
 			val = [block.val.operation, fetchByName(ctx, block.val.operand1), fetchByName(ctx, block.val.operand2)];
@@ -208,8 +207,6 @@ function formatValue(ctx, type, value) {
 }
 
 function getOffset(ctx, value) {
-	console.log("Looking for "+value+"..");
-	console.log(ctx.globalLocalDepth + "+" + ctx.scopedLocalDepth + "-" + 	ctx.locals[value]);
 	return ctx.globalLocalDepth + ctx.scopedLocalDepth - ctx.locals[value];
 }
 
