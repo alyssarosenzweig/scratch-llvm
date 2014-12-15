@@ -172,7 +172,7 @@ function parse(file, ffi) {
 					block.val = {
 						type: "variable",
 						name: m[2],
-						type: m[1]
+						vtype: m[1]
 					}
 
 					functionBlock.code.push(block);

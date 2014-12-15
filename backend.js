@@ -115,6 +115,7 @@ function compileInstruction(ctx, block) {
 		if(block.val.type == "return value") {
 			val = ["readVariable", "return value"];
 		} else if(block.val.type == "variable") {
+			console.log(block.val);
 			val = fetchByName(ctx, block.val.name);
 		} else if(block.val.type == "arithmetic") {
 			val = [block.val.operation, fetchByName(ctx, block.val.operand1), fetchByName(ctx, block.val.operand2)];
@@ -207,6 +208,8 @@ function formatValue(ctx, type, value) {
 }
 
 function getOffset(ctx, value) {
+	console.log("Looking for "+value+"..");
+	console.log(ctx.globalLocalDepth + "+" + ctx.scopedLocalDepth + "-" + 	ctx.locals[value]);
 	return ctx.globalLocalDepth + ctx.scopedLocalDepth - ctx.locals[value];
 }
 
@@ -220,7 +223,7 @@ function stackPosFromOffset(offset) {
 		return stackPtr();
 	}*/
 
-	return ["+", stackPtr(), offset + 1];
+	return ["+", stackPtr(), offset];
 }
 
 // higher-level code generation
@@ -230,9 +233,9 @@ function allocateLocal(ctx, val, name) {
 		var depth = 0;
 
 		if(ctx.scoped) {
-			depth = ctx.globalLocalDepth + (++ctx.scopedLocalDepth);
+			depth = ctx.globalLocalDepth + (ctx.scopedLocalDepth++);
 		} else {
-			depth = ctx.globalLocalDepth;
+			depth = ctx.globalLocalDepth++;
 		}
 
 		ctx.locals[name] = depth;
@@ -269,7 +272,7 @@ function freeLocals(ctx) {
 	return freeStack(numToFree);
 }
 
-function fetchByName(ctx, n) {
+function fetchByName(ctx, n) {	
 	if(ctx.locals[n] !== undefined)
 		return ["getLine:ofList:", stackPosFromOffset(getOffset(ctx, n)), "DATA"];
 	else if(ctx.params.indexOf(n) > -1)
