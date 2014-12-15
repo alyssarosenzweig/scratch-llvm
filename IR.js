@@ -19,7 +19,7 @@ var regexs = {
 	div: /^div ([^ ]+) ([^,]+), (.+)/,
 	icmp: /^icmp ([^ ]+) ([^ ]+) ([^,]+), (.+)/,
 	sext: /^sext i\d+ ([^ ]+) to i\d+/,
-	getelementptr: /^getelementptr (inbounds )? ([^ ]+) ([^,]+), ([^ ]+) (.+)/,
+	getelementptr: /^getelementptr (inbounds )?([^ ]+) ([^,]+), ([^ ]+) (.+)/,
 
 	localSet: /^\s+%([^ ]+) = (.+)/,
 
