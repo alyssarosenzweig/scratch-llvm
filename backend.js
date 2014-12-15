@@ -12,11 +12,14 @@ module.exports.generateFunctionHat = function(functionContext, func) {
 	for(var i = 0; i < func.paramList.length; ++i) {
 		var pName = "param" + i;
 
-		if(func.paramList[i][1])
-			pName = func.paramList[i][1];
-
-		inputs.push(pName);
-		functionContext.params.push(pName);
+		if(func.paramList[i][1]) {
+			pName = func.paramList[i][1].slice(1);
+			inputs.push(pName);
+			functionContext.params.push("%"+pName);
+		} else {
+			inputs.push(pName);
+			functionContext.params.push(pName);
+		}
 		
 		defaults.push(defaultForType(func.paramList[i][0]));
 		spec += " "+specifierForType(func.paramList[i][0]);
@@ -273,7 +276,7 @@ function fetchByName(ctx, n) {
 	if(ctx.locals[n] !== undefined)
 		return ["getLine:ofList:", stackPosFromOffset(getOffset(ctx, n)), "DATA"];
 	else if(ctx.params.indexOf(n) > -1)
-		return ["getParam", n, "r"];
+		return ["getParam", n.slice(1), "r"];
 	else if( (n * 1) == n)
 		return n
 	else

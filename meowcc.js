@@ -9,6 +9,8 @@ var IR = (require('./IR'))(
 	}
 );
 
+console.log(IR.functions[0]);
+
 var meow = require("./meow").instance();
 var backend = require("./backend");
 
