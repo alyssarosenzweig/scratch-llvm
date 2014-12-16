@@ -9,8 +9,6 @@ var IR = (require('./IR'))(
 	}
 );
 
-console.log(IR.functions[0]);
-
 var meow = require("./meow").instance();
 var backend = require("./backend");
 
@@ -107,8 +105,6 @@ meow.addScript([
 		["append:toList:", "", "TTY"],
 		["call", "@main"] // TODO: argc + argv
 	])
-
-console.log(JSON.stringify(meow.serialize()));
 
 if(process.argv[3]) {
 	meow.upload(process.argv[3], 'v426', process.argv[4], process.argv[5]);
