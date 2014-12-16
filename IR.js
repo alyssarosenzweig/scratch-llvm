@@ -252,8 +252,9 @@ function parse(file, ffi) {
 					block.val = {
 						type: "addressOf",
 						base: {
-							name: m[2]
-						}
+							name: m[3],
+						},
+						offset: m[5]
 					}
 
 					functionBlock.code.push(block);

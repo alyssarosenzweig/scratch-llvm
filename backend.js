@@ -129,7 +129,7 @@ function compileInstruction(ctx, block) {
 		} else if(block.val.type == "sext") {
 			val = signExtend(ctx, block.val);
 		} else if(block.val.type == "addressOf") { // todo: full getelementptr implementation
-			val = addressOf(ctx, block.val.base.name);
+			val = addressOf(ctx, block.val.base.name, block.val.offset);
 		}
 
 		return compileInstruction(ctx, block.computation)
@@ -310,13 +310,22 @@ function fetchByName(ctx, n, expectedType) {
 		return ["undefined"];
 }
 
-function addressOf(ctx, n) {
-	console.log(n);
+function addressOf(ctx, n, offset) {
+	// TODO: full implementation
+	// this will work for now, anyway
+
+	// first, we need to get the address of the base pointer
+	// this will either be a standard stack-based pointer, or a reference to rootGlobal
+
+	var base = 0;
+
 	if(ctx.rootGlobal[n.slice(1)])
-		return ctx.rootGlobal[n.slice(1)].ptr;
-	else
-		console.log("addressOf undefined "+n);
-		return ["undefined"];
+		base = ctx.rootGlobal[n.slice(1)].ptr;
+	else if(ctx.locals[n])
+		base = ["getLine:ofList:", stackPosFromOffset(getOffset(ctx, n)), "DATA"];
+
+	// then, we add the offset
+	return ["+", base, offset];
 }
 
 function returnBlock(ctx, val) {
