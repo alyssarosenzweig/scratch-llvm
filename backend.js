@@ -419,6 +419,8 @@ function icmpBlock(ctx, block) {
 }
 
 function signExtend(ctx, block) {
+	console.log("signExtend");
+	console.log(block);
 	// TODO: once we support typing correctly, sign extend will need a proper implementation too
-	return [fetchByName(block.source)];
+	return fetchByName(ctx, block.source);
 }

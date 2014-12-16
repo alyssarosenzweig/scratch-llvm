@@ -18,7 +18,7 @@ var regexs = {
 	mul: /^mul ([^ ]+) ([^,]+), (.+)/,
 	div: /^div ([^ ]+) ([^,]+), (.+)/,
 	icmp: /^icmp ([^ ]+) ([^ ]+) ([^,]+), (.+)/,
-	sext: /^sext i\d+ ([^ ]+) to i\d+/,
+	sext: /^sext i(\d+) ([^ ]+) to i(\d+)/,
 	getelementptr: /^getelementptr (inbounds )?([^ ]+) ([^,]+), ([^ ]+) (.+)/,
 
 	localSet: /^\s+%([^ ]+) = (.+)/,
@@ -237,7 +237,7 @@ function parse(file, ffi) {
 					var m = m[2].match(regexs.sext);
 
 					block.val = {
-						type: "signext",
+						type: "sext",
 						source: m[2],
 						originalType: m[1],
 						newType: m[3]
