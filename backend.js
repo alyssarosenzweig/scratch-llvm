@@ -288,13 +288,14 @@ function fetchByName(ctx, n, expectedType) {
 
 			if(expectedReferenceCount == actualReferenceCount - 1) {
 				// dereference
-				return stackPos;
+				return ["getLine:ofList:", o, "DATA"];
 			} else if(actualReferenceCount == expectedReferenceCount + 1) {
 				// addressOf
-				return addressOf(ctx, n);
+				return stackPos;
 			}
 
-			console.log("expecting "+expectedReferenceCount+", actually" + actualReferenceCount);
+			if(expectedReferenceCount != actualReferenceCount)
+				console.log("WARNING: Expecting "+expectedReferenceCount+", actually" + actualReferenceCount);
 		}
 
 
@@ -310,6 +311,7 @@ function fetchByName(ctx, n, expectedType) {
 }
 
 function addressOf(ctx, n) {
+	console.log(n);
 	if(ctx.rootGlobal[n.slice(1)])
 		return ctx.rootGlobal[n.slice(1)].ptr;
 	else
