@@ -33,6 +33,7 @@ module.exports.generateFunctionHat = function(functionContext, func) {
 module.exports.compileFunction = function(func, IR) {
 	var functionContext = {
 		locals: {},
+		localTypes: {},
 		globalLocalDepth: 0,
 		scopedLocalDepth: 0,
 		params: [],
@@ -114,11 +115,13 @@ function compileInstruction(ctx, block) {
 		return module.exports.ffi[block.ffiBlock];
 	} else if(block.type == "set") {
 		var val = 0;
+		var type = block.val.vtype || "";
 
 		if(block.val.type == "return value") {
 			val = ["readVariable", "return value"];
 		} else if(block.val.type == "variable") {
-			val = fetchByName(ctx, block.val.name);
+			val = fetchByName(ctx, block.val.name, block.val.vtype);
+			type = block.val.vtype;
 		} else if(block.val.type == "arithmetic") {
 			val = [block.val.operation, fetchByName(ctx, block.val.operand1), fetchByName(ctx, block.val.operand2)];
 		} else if(block.val.type == "comparison") {
@@ -130,7 +133,7 @@ function compileInstruction(ctx, block) {
 		}
 
 		return compileInstruction(ctx, block.computation)
-				.concat(allocateLocal(ctx, val, block.name));
+				.concat(allocateLocal(ctx, val, block.name, type));
 	} else if(block.type == "ret") {
 		return returnBlock(ctx, block.value);
 	} else if(block.type == "store") {
@@ -228,7 +231,7 @@ function stackPosFromOffset(offset) {
 
 // higher-level code generation
 
-function allocateLocal(ctx, val, name) {
+function allocateLocal(ctx, val, name, type) {
 	if(name) {		
 		var depth = 0;
 
@@ -239,6 +242,7 @@ function allocateLocal(ctx, val, name) {
 		}
 
 		ctx.locals[name] = depth;
+		ctx.localTypes[name] = type;
 	}
 
 	ctx.globalToFree++;
@@ -272,10 +276,30 @@ function freeLocals(ctx) {
 	return freeStack(numToFree);
 }
 
-function fetchByName(ctx, n) {	
-	if(ctx.locals[n] !== undefined)
-		return ["getLine:ofList:", stackPosFromOffset(getOffset(ctx, n)), "DATA"];
-	else if(ctx.params.indexOf(n) > -1)
+function fetchByName(ctx, n, expectedType) {	
+	if(ctx.locals[n] !== undefined) {
+		var stackPos = stackPosFromOffset(getOffset(ctx, n));
+		var o = ["getLine:ofList:", stackPos, "DATA"];
+
+		if(expectedType) {
+			var actualType = ctx.localTypes[n];
+			var actualReferenceCount = actualType.split('*').length - 1;
+			var expectedReferenceCount = expectedType.split('*').length - 1;
+
+			if(expectedReferenceCount == actualReferenceCount - 1) {
+				// dereference
+				return stackPos;
+			} else if(actualReferenceCount == expectedReferenceCount + 1) {
+				// addressOf
+				return addressOf(ctx, n);
+			}
+
+			console.log("expecting "+expectedReferenceCount+", actually" + actualReferenceCount);
+		}
+
+
+		return o;
+	} else if(ctx.params.indexOf(n) > -1)
 		return ["getParam", n.slice(1), "r"];
 	else if( (n * 1) == n)
 		return n

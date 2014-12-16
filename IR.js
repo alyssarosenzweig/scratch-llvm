@@ -150,7 +150,7 @@ function parse(file, ffi) {
 				var block = {
 					type: "set",
 					name: "%"+m[1],
-					val: 0,
+					val: {},
 					computation: []
 				};
 
@@ -165,6 +165,12 @@ function parse(file, ffi) {
 					// no computation work here, but it still needs a spot on the stack for now
 					// todo: optimize alloca calls out
 					
+					var m = m[2].match(regexs.alloca);
+					
+					block.val = {
+						vtype: m[1]+"*"
+					}
+
 					functionBlock.code.push(block);
 				} else if(regexs.load.test(m[2])) {
 					var m = m[2].match(regexs.load);

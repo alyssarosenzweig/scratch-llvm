@@ -108,6 +108,8 @@ meow.addScript([
 		["call", "@main"] // TODO: argc + argv
 	])
 
+console.log(JSON.stringify(meow.serialize()));
+
 if(process.argv[3]) {
 	meow.upload(process.argv[3], 'v426', process.argv[4], process.argv[5]);
 } else {
