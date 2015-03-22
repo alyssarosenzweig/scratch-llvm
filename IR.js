@@ -316,7 +316,7 @@ function parse(file, ffi) {
 					falseDest: match[3],
 					condition: match[1]
 				})
-			} else {
+			} else if(lines[i].length){
 				console.log("Unknown instruction line: ");
 				console.log(lines[i]);
 			}
