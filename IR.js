@@ -21,6 +21,7 @@ var regexs = {
 	icmp: /^icmp ([^ ]+) ([^ ]+) ([^,]+), (.+)/,
 	sext: /^sext i(\d+) ([^ ]+) to i(\d+)/,
 	getelementptr: /^getelementptr (inbounds )?([^ ]+) ([^,]+), ([^ ]+) (.+)/,
+	ashr: /^ashr ([^ ]+) ([^,]+), (.+)/,
 
 	localSet: /^\s+%([^ ]+) = (.+)/,
 
@@ -270,6 +271,17 @@ function parse(file, ffi) {
 						offset: m[5],
 						vtype: m[2]
 					}
+
+					functionBlock.code.push(block);
+				} else if(regexs.ashr.test(m[2])) {
+					var m = m[2].match(regexs.ashr);
+
+					block.val = {
+						type: "ashr",
+						vtype: m[1],
+						operand1: m[2],
+						operand2: m[3],
+					};
 
 					functionBlock.code.push(block);
 				} else {
