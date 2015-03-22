@@ -194,7 +194,7 @@ function parse(file, ffi) {
 
 					functionBlock.code.push(block);
 				} else if(regexs.sub.test(m[2])) {
-					var m = m[2].match(regexs.add);
+					var m = m[2].match(regexs.sub);
 					block.val = {
 						type: "arithmetic",
 						operation: "-",
@@ -204,7 +204,7 @@ function parse(file, ffi) {
 
 					functionBlock.code.push(block);
 				} else if(regexs.mul.test(m[2])) {
-					var m = m[2].match(regexs.add);
+					var m = m[2].match(regexs.mul);
 					block.val = {
 						type: "arithmetic",
 						operation: "*",
@@ -214,7 +214,7 @@ function parse(file, ffi) {
 
 					functionBlock.code.push(block);
 				} else if(regexs.div.test(m[2])) {
-					var m = m[2].match(regexs.add);
+					var m = m[2].match(regexs.div);
 					block.val = {
 						type: "arithmetic",
 						operation: "/",
