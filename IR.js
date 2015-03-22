@@ -118,7 +118,7 @@ function parse(file, ffi) {
 				var type = m[5].trim();
 
 				var val = null;
-				
+
 				if(m[9]) {
 					val = formatValue(type, m[9].trim());
 				}
@@ -164,9 +164,9 @@ function parse(file, ffi) {
 				} else if(regexs.alloca.test(m[2])) {
 					// no computation work here, but it still needs a spot on the stack for now
 					// todo: optimize alloca calls out
-					
+
 					var m = m[2].match(regexs.alloca);
-					
+
 					block.val = {
 						vtype: m[1]+"*"
 					}
@@ -246,6 +246,7 @@ function parse(file, ffi) {
 					functionBlock.code.push(block);
 				} else if(regexs.getelementptr.test(m[2])) {
 					console.log("getelementptr todo");
+					console.log(m);
 
 					var m = m[2].match(regexs.getelementptr);
 
@@ -254,7 +255,8 @@ function parse(file, ffi) {
 						base: {
 							name: m[3],
 						},
-						offset: m[5]
+						offset: m[5],
+						vtype: m[2]
 					}
 
 					functionBlock.code.push(block);
@@ -402,7 +404,7 @@ function extracti8ArrayFromString(str) {
 		}
 	}
 
-	return i8array;	
+	return i8array;
 }
 
 function extractArrayLiteral(str) {

@@ -20,7 +20,7 @@ module.exports.generateFunctionHat = function(functionContext, func) {
 			inputs.push(pName);
 			functionContext.params.push(pName);
 		}
-		
+
 		defaults.push(defaultForType(func.paramList[i][0]));
 		spec += " "+specifierForType(func.paramList[i][0]);
 	}
@@ -55,7 +55,7 @@ module.exports.compileFunction = function(func, IR) {
 		var iGain = 1;
 
 		var hasGotoComplex = functionContext.gotoComplex && functionContext.gotoComplex.okToUse && functionContext.gotoComplex.active; // this MUST be before compileInstruction for branching to work
-		
+
 		// optimize out alloca calls
 		if(func.code[i].type == "set" && func.code[i].computation == [] && func.code[i].value == 0 &&
 			func.code[i+1].type == "store" && func.code[i+1].destination.value == func.code[i].name) {
@@ -115,6 +115,7 @@ function compileInstruction(ctx, block) {
 		return module.exports.ffi[block.ffiBlock];
 	} else if(block.type == "set") {
 		var val = 0;
+		if(!block.val.vtype) console.log(block.val);
 		var type = block.val.vtype || "";
 
 		if(block.val.type == "return value") {
@@ -197,7 +198,7 @@ function specifierForType(type) {
 }
 
 // fixme: stub
-function formatValue(ctx, type, value) { 
+function formatValue(ctx, type, value) {
 	if(typeof value == "object") {
 		if(value.type == "getelementptr") {
 			// fixme: necessary and proper implementation
@@ -232,7 +233,7 @@ function stackPosFromOffset(offset) {
 // higher-level code generation
 
 function allocateLocal(ctx, val, name, type) {
-	if(name) {		
+	if(name) {
 		var depth = 0;
 
 		if(ctx.scoped) {
@@ -246,7 +247,7 @@ function allocateLocal(ctx, val, name, type) {
 	}
 
 	ctx.globalToFree++;
-	
+
 	if(ctx.scoped) {
 		ctx.scopeToFree++;
 	}
@@ -276,7 +277,7 @@ function freeLocals(ctx) {
 	return freeStack(numToFree);
 }
 
-function fetchByName(ctx, n, expectedType) {	
+function fetchByName(ctx, n, expectedType) {
 	if(ctx.locals[n] !== undefined) {
 		var stackPos = stackPosFromOffset(getOffset(ctx, n));
 		var o = ["getLine:ofList:", stackPos, "DATA"];
@@ -330,7 +331,7 @@ function addressOf(ctx, n, offset) {
 
 function returnBlock(ctx, val) {
 	var proc = freeLocals(ctx);
-	
+
 	if(ctx.gotoComplex) {
 		proc = proc.concat(cleanGotoComplex());
 	}
