@@ -29,9 +29,10 @@ backend.ffi["@puts"] = [
 			["getLine:ofList:", ["+", ["getParam", "param0", "r"], ["readVariable", "_temp0"]], "DATA"],
 			"0"],
 		[["call",
-				"@putch %s",
+				"@putchar %s",
 				["getLine:ofList:", ["+", ["getParam", "param0", "r"], ["readVariable", "_temp0"]], "DATA"]],
-			["changeVar:by:", "_temp0", 1]]]
+			["changeVar:by:", "_temp0", 1]]],
+	["call", "@putchar %s", 13]
 ];
 
 var tty = new (require("./meow")).ListTuple("TTY");

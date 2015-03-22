@@ -12,9 +12,9 @@ void main() {
     if( (i % 15) == 0) {
       puts("Fizzbuzz");
     } else if( (i % 3) == 0) {
-      puts("Fizz\n");
+      puts("Fizz");
     } else if( (i % 5) == 0) {
-      puts("Buzz\n");
+      puts("Buzz");
     } else {
       putnum(i);
     }
