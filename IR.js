@@ -17,6 +17,7 @@ var regexs = {
 	sub: /^sub ([^ ]+) ([^,]+), (.+)/,
 	mul: /^mul ([^ ]+) ([^,]+), (.+)/,
 	div: /^div ([^ ]+) ([^,]+), (.+)/,
+	srem: /^srem ([^ ]+) ([^,]+), (.+)/,
 	icmp: /^icmp ([^ ]+) ([^ ]+) ([^,]+), (.+)/,
 	sext: /^sext i(\d+) ([^ ]+) to i(\d+)/,
 	getelementptr: /^getelementptr (inbounds )?([^ ]+) ([^,]+), ([^ ]+) (.+)/,
@@ -217,6 +218,16 @@ function parse(file, ffi) {
 					block.val = {
 						type: "arithmetic",
 						operation: "/",
+						operand1: m[2],
+						operand2: m[3]
+					};
+
+					functionBlock.code.push(block);
+				} else if(regexs.srem.test(m[2])) {
+					var m = m[2].match(regexs.srem);
+					block.val = {
+						type: "srem",
+						vtype: m[1],
 						operand1: m[2],
 						operand2: m[3]
 					};
