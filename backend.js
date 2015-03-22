@@ -131,6 +131,9 @@ function compileInstruction(ctx, block) {
 			val = signExtend(ctx, block.val);
 		} else if(block.val.type == "addressOf") { // todo: full getelementptr implementation
 			val = addressOf(ctx, block.val.base.name, block.val.offset);
+		} else {
+			console.log("Unknown equality in backend");
+			console.log(block.val);
 		}
 
 		return compileInstruction(ctx, block.computation)
