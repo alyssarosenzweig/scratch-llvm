@@ -133,6 +133,15 @@ function compileInstruction(ctx, block) {
 			val = addressOf(ctx, block.val.base.name, block.val.offset);
 		} else if(block.val.type == "srem") {
 			val = ["computeFunction:of:", "floor", ["%", fetchByName(ctx, block.val.operand1), fetchByName(ctx, block.val.operand2)]]
+		} else if(block.val.type == "ashr") {
+			val = [
+							"computeFunction:of:",
+							"floor",
+							["/",
+							 	fetchByName(ctx, block.val.operand1),
+								exponentTwo(fetchByName(ctx, block.val.operand2))
+							]
+						];
 		} else {
 			console.log("Unknown equality in backend");
 			console.log(block.val);
@@ -438,4 +447,10 @@ function icmpBlock(ctx, block) {
 function signExtend(ctx, block) {
 	// TODO: once we support typing correctly, sign extend will need a proper implementation too
 	return fetchByName(ctx, block.source);
+}
+
+function exponentTwo(v) {
+	return ["computeFunction:of:", "e ^",
+						["*", v, 0.69314718056]
+					];
 }
