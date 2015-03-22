@@ -1,4 +1,4 @@
-void putch(int);
+void putchar(int);
 
 int toBeTested() {
 	return 1;
@@ -6,8 +6,8 @@ int toBeTested() {
 
 void main() {
 	if(toBeTested() == 2) {
-		putch('A');
+		putchar('A');
 	} else {
-		putch('B');
+		putchar('B');
 	}
 }

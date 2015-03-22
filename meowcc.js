@@ -5,14 +5,14 @@ front-end to the compiler
 var IR = (require('./IR'))(
 	{
 		filename: process.argv[2],
-		ffi: ["@putch", "@puts"]
+		ffi: ["@putchar", "@puts"]
 	}
 );
 
 var meow = require("./meow").instance();
 var backend = require("./backend");
 
-backend.ffi["@putch"] = [
+backend.ffi["@putchar"] = [
 	["doIfElse",
 					["|", ["=", ["getParam", "param0", "r"], "13"], ["=", ["getParam", "param0", "r"], "10"]],
 					[["append:toList:", "", "TTY"]],

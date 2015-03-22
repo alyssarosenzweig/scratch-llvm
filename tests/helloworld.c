@@ -1,8 +1,8 @@
-void putch(int);
+void putchar(int);
 void puts(char*);
 
 void main() {
-	putch('A');
+	putchar('A');
 	puts("\nUntil a proper standard library is setup, \n");
 	puts("There has to be a reference to every library call.\n");
 	puts("Without further ado..\n");

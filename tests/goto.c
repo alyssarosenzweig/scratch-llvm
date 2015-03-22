@@ -1,9 +1,9 @@
-void putch(int);
+void putchar(int);
 
 int main() {
 	mylabel:
-	putch('H');
-	putch('i');
-	putch(13);
+	putchar('H');
+	putchar('i');
+	putchar(13);
 	goto mylabel;
 }

@@ -1,8 +1,8 @@
-void putch(char);
+void putchar(char);
 
 void uputs(char* str) {
 	for(; *str != 0; str++)
-		putch(*str);
+		putchar(*str);
 }
 
 void main() {

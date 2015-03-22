@@ -1,7 +1,7 @@
-void putch(int);
+void putchar(int);
 
 void alphabet(int letter) {
-	putch(letter);
+	putchar(letter);
 	alphabet(letter + 1);
 }
 
