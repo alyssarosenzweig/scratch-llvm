@@ -57,6 +57,7 @@ for(var i = 0; i < IR.globals.length; ++i) {
 		rodata.contents = rodata.contents.concat(global.val);
 	} else {
 		console.log("Warning: non-array global found. TODO: actually implement this");
+		console.log(global);
 	}
 
 	IR.rootGlobal[global.name] = global;

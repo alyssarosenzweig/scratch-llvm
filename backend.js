@@ -126,7 +126,7 @@ function compileInstruction(ctx, block) {
 		} else if(block.val.type == "arithmetic") {
 			val = [block.val.operation, fetchByName(ctx, block.val.operand1), fetchByName(ctx, block.val.operand2)];
 		} else if(block.val.type == "comparison") {
-			val = icmpBlock(ctx, val);
+			val = icmpBlock(ctx, block);
 		} else if(block.val.type == "sext") {
 			val = signExtend(ctx, block.val);
 		} else if(block.val.type == "addressOf") { // todo: full getelementptr implementation
