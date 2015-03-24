@@ -142,6 +142,9 @@ function compileInstruction(ctx, block) {
 								exponentTwo(fetchByName(ctx, block.val.operand2))
 							]
 						];
+		} else if(block.val.type == "and") {
+			val = bitwise_and(fetchByName(ctx, block.val.operand1), fetchByName(ctx, block.val.operand2));
+			console.log(val);
 		} else {
 			console.log("Unknown equality in backend");
 			console.log(block.val);
@@ -453,4 +456,28 @@ function exponentTwo(v) {
 	return ["computeFunction:of:", "e ^",
 						["*", v, 0.69314718056]
 					];
+}
+
+// TODO: very hacky. find better solution soon.
+function components8(op) {
+	return [
+						["%", op, 15],
+						["/", ["-", op, ["%", op, 15]], 16]
+					];
+}
+
+function bitwise_and4(op1, op2) {
+	return ["getLine:ofList:", ["+", ["*", op1, 16], op2], "4-bit AND"]
+}
+
+function bitwise_and(op1, op2) {
+	// assume i8 for now TODO: multi width
+
+	op1 = components8(op1);
+	op2 = components8(op2);
+
+	return ["+",
+			["*", bitwise_and4(op1[1], op2[1]), 16],
+			bitwise_and4(op1[0], op2[0])
+	];
 }
