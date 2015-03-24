@@ -23,6 +23,7 @@ var regexs = {
 	getelementptr: /^getelementptr (inbounds )?([^ ]+) ([^,]+), ([^ ]+) (.+)/,
 	ashr: /^ashr ([^ ]+) ([^,]+), (.+)/,
 	and: /^and ([^ ]+) ([^,]+), (.+)/,
+	trunc: /^trunc ([^ ]+) ([^ ]+) to (.+)/,
 
 	localSet: /^\s+%([^ ]+) = (.+)/,
 
@@ -252,6 +253,17 @@ function parse(file, ffi) {
 
 					block.val = {
 						type: "sext",
+						source: m[2],
+						originalType: m[1],
+						newType: m[3]
+					}
+
+					functionBlock.code.push(block);
+				} else if(regexs.trunc.test(m[2])) {
+					var m = m[2].match(regexs.trunc);
+
+					block.val {
+						type: "trunc",
 						source: m[2],
 						originalType: m[1],
 						newType: m[3]
