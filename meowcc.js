@@ -67,7 +67,9 @@ meow.lists.push(rodata);
 var and4bit = new (require("./meow")).ListTuple("4-bit AND");
 
 for(var i = 0; i < 256; ++i) {
-	and4bit.contents.push(((i & 0xF0) >> 4) & (i & 0x0F));
+	and4bit.contents.push(
+		((i & 0xF0) >> 4) & (i & 0x0F)
+	);
 }
 
 meow.lists.push(and4bit);

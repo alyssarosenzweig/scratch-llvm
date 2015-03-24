@@ -461,13 +461,13 @@ function exponentTwo(v) {
 // TODO: very hacky. find better solution soon.
 function components8(op) {
 	return [
-						["%", op, 15],
-						["/", ["-", op, ["%", op, 15]], 16]
+						["%", op, 16],
+						["/", ["-", op, ["%", op, 16]], 16]
 					];
 }
 
 function bitwise_and4(op1, op2) {
-	return ["getLine:ofList:", ["+", ["*", op1, 16], op2], "4-bit AND"]
+	return ["getLine:ofList:", ["+", ["+", ["*", op1, 16], op2], 1], "4-bit AND"]
 }
 
 function bitwise_and(op1, op2) {
