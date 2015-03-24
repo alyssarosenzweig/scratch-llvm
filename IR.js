@@ -262,7 +262,7 @@ function parse(file, ffi) {
 				} else if(regexs.trunc.test(m[2])) {
 					var m = m[2].match(regexs.trunc);
 
-					block.val {
+					block.val = {
 						type: "trunc",
 						source: m[2],
 						originalType: m[1],

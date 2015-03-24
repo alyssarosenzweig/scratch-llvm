@@ -129,6 +129,8 @@ function compileInstruction(ctx, block) {
 			val = icmpBlock(ctx, block);
 		} else if(block.val.type == "sext") {
 			val = signExtend(ctx, block.val);
+		} else if(block.val.type == "trunc") {
+			val = truncate(ctx, block.val);
 		} else if(block.val.type == "addressOf") { // todo: full getelementptr implementation
 			val = addressOf(ctx, block.val.base.name, block.val.offset);
 		} else if(block.val.type == "srem") {
@@ -449,6 +451,11 @@ function icmpBlock(ctx, block) {
 
 function signExtend(ctx, block) {
 	// TODO: once we support typing correctly, sign extend will need a proper implementation too
+	return fetchByName(ctx, block.source);
+}
+
+function truncate(ctx, block) {
+	// TODO: once we support typing correctly, truncate will need a proper implementation too
 	return fetchByName(ctx, block.source);
 }
 
