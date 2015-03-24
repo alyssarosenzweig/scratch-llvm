@@ -460,9 +460,9 @@ function truncate(ctx, block) {
 }
 
 function exponentTwo(v) {
-	return ["computeFunction:of:", "e ^",
+	return ["computeFunction:of:", "floor", ["computeFunction:of:", "e ^",
 						["*", v, 0.69314718056]
-					];
+					]];
 }
 
 // TODO: very hacky. find better solution soon.
