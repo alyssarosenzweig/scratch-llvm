@@ -22,6 +22,7 @@ var regexs = {
 	sext: /^sext i(\d+) ([^ ]+) to i(\d+)/,
 	getelementptr: /^getelementptr (inbounds )?([^ ]+) ([^,]+), ([^ ]+) (.+)/,
 	ashr: /^ashr ([^ ]+) ([^,]+), (.+)/,
+	and: /^and ([^ ]+) ([^,]+), (.+)/,
 
 	localSet: /^\s+%([^ ]+) = (.+)/,
 
@@ -278,6 +279,17 @@ function parse(file, ffi) {
 
 					block.val = {
 						type: "ashr",
+						vtype: m[1],
+						operand1: m[2],
+						operand2: m[3],
+					};
+
+					functionBlock.code.push(block);
+				} else if(regexs.and.test(m[2])) {
+					var m = m[2].match(regexs.and);
+
+					block.val = {
+						type: "and",
 						vtype: m[1],
 						operand1: m[2],
 						operand2: m[3],
