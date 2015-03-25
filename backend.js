@@ -265,10 +265,10 @@ function allocateLocal(ctx, val, name, type) {
 		ctx.localTypes[name] = type;
 	}
 
-	ctx.globalToFree++;
-
 	if(ctx.scoped) {
 		ctx.scopeToFree++;
+	} else {
+		ctx.globalToFree++;
 	}
 
 	return [
@@ -284,11 +284,11 @@ function freeStack(num) {
 	];
 }
 
-function freeLocals(ctx) {
-	var numToFree = ctx.globalToFree;
+function freeLocals(ctx, keepGlobals) {
+	var numToFree = !!keepGlobals * ctx.globalToFree;
 
 	if(ctx.scoped) {
-		numToFree = ctx.scopeToFree;
+		numToFree += ctx.scopeToFree;
 		ctx.scopeToFree = 0;
 		ctx.scopedLocalDepth = 0;
 	}
@@ -349,7 +349,7 @@ function addressOf(ctx, n, offset) {
 }
 
 function returnBlock(ctx, val) {
-	var proc = freeLocals(ctx);
+	var proc = freeLocals(ctx, true);
 
 	if(ctx.gotoComplex) {
 		proc = proc.concat(cleanGotoComplex());
