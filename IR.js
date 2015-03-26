@@ -20,7 +20,7 @@ var regexs = {
 	srem: /^srem ([^ ]+) ([^,]+), (.+)/,
 	icmp: /^icmp ([^ ]+) ([^ ]+) ([^,]+), (.+)/,
 	sext: /^sext i(\d+) ([^ ]+) to i(\d+)/,
-	getelementptr: /^getelementptr (inbounds )?([^ ]+) ([^,]+), ([^ ]+) (.+)/,
+	getelementptr: /^getelementptr (inbounds )?(\[([^ \]]+))?([^ ]+) ([^,]+), ([^ ]+) (.+)/,
 	ashr: /^ashr ([^ ]+) ([^,]+), (.+)/,
 	and: /^and ([^ ]+) ([^,]+), (.+)/,
 	trunc: /^trunc ([^ ]+) ([^ ]+) to (.+)/,
@@ -279,10 +279,10 @@ function parse(file, ffi) {
 					block.val = {
 						type: "addressOf",
 						base: {
-							name: m[3],
+							name: m[4],
 						},
-						offset: m[5],
-						vtype: m[2]
+						offset: m[6],
+						vtype: m[7]
 					}
 
 					functionBlock.code.push(block);
