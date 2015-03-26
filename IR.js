@@ -119,7 +119,7 @@ function parse(file, ffi) {
 				var m = lines[i].match(regexs.globalVar);
 
 				var name = m[1].trim();
-				var type = m[5].trim();
+				var type = m[6].trim();
 
 				var val = null;
 
@@ -471,6 +471,8 @@ function formatValue(type, value) {
 		return constantExpression(m[1].trim(), m[2]);
 	} else if(type[0] == '[') {
 		return extractArrayLiteral(value);
+	} else if(type[0] == 'c') {
+		return extracti8ArrayFromString(value);
 	}
 
 	return value;
