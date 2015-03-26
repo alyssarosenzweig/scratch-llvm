@@ -31,7 +31,7 @@ var regexs = {
 	absoluteBranch: /\s+br label (.+)/,
 	conditionalBranch: /\s+br i1 ([^,]+), label ([^,]+), label (.+)/,
 
-	globalVar: /@([^ ]+) = (private )?(unnamed_addr )?(constant )?((\[([^\]])+\])|([^ ]+))(.+)/,
+	globalVar: /@([^ ]+) = (private )?(unnamed_addr )?(constant )?(global )?((\[([^\]])+\])|([^ ]+))(.+)/,
 
 	inlineInstruction: /([a-zA-Z ]+)\(([^\(]+)\)/
 }
@@ -123,8 +123,8 @@ function parse(file, ffi) {
 
 				var val = null;
 
-				if(m[9]) {
-					val = formatValue(type, m[9].trim());
+				if(m[10]) {
+					val = formatValue(type, m[10].trim());
 				}
 
 				mod.globals.push({
