@@ -1,0 +1,59 @@
+# frontend to meowcc
+# the Scratch linker <3
+# llvm-link a.ll b.ll -f | llvm-dis
+
+import subprocess
+import argparse
+
+# parse arguments in pretty way
+
+parser = argparse.ArgumentParser(description='Frontend to meowcc')
+parser.add_argument("--output", "-o", help="output file")
+parser.add_argument("--csrf", help="CSRF token extracted from Scratch website")
+parser.add_argument("--session", help="Session ID extracted from Scratch website")
+parser.add_argument("--project", "-pid", help="Project ID to upload to")
+
+parser.add_argument("files", metavar='F', nargs="+")
+
+args = parser.parse_args()
+
+projectName = args.output or args.project
+
+# first, compile any C program into LLVM
+
+llvmFiles = []
+
+for file in args.files:
+    extension = file.split(".")[-1]
+    
+    # if it is an llvm file, we don't need to do anything
+    # but if it is a c file, we need to compile it
+
+    if extension == 'll':
+        llvmFiles.append(file)
+    elif extension == 'c':
+        # compile this into ll, then add it to the list
+        subprocess.call(["clang", "-S", "-emit-llvm", file])
+        
+        # this will now be the same file with a .ll extension
+        # do some string twiddling and be on our way <3
+
+        llvmFiles.append(".".join(file.split(".")[0:-1]) + ".ll")
+    else:
+        print "Unknown file extension for file " + file
+
+# unfortunately, scratch-llvm only works with a single llvm file
+# link them here <3
+
+# TODO: mitigate the shell=True security risk...
+subprocess.call("llvm-link "+ (" ".join(llvmFiles)) + " -f | llvm-dis > " + projectName + ".lll", shell=True)
+inputFile = projectName + ".lll"
+
+# finally, make the actual call
+
+if args.output:
+    subprocess.call("node meowcc.js "+inputFile+" > "+args.output, shell=True)    
+elif args.project:
+    subprocess.call("node meowcc.js "+inputFile+" "+args.project+" "+args.csrf+" "+args.session, shell=True)
+else:
+    subprocess.call("node meowcc.js "+inputFile, shell=True)
