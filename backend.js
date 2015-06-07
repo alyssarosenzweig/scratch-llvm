@@ -367,12 +367,26 @@ function returnBlock(ctx, val) {
 function callBlock(ctx, block) {
 	var spec = block.funcName;
 	var args = [];
+    
+    var varargs = false;
 
-
-	for(var a = 0; a < block.paramList.length; ++a) {
+	if(block.returnType.indexOf("...") > -1) {
+        varargs = true;
+    }
+    
+    console.log(block);
+    
+    for(var a = 0; a < block.paramList.length; ++a) {
 		args.push(formatValue(ctx, block.paramList[a][0], block.paramList[a][1]));
 		spec += " "+specifierForType(block.paramList[a][0]);
 	}
+
+    if(varargs) {
+        // TODO: varargs
+
+        args.push(-1);
+        spec += " %s";
+    }
 
 	return [
 		["call", spec].concat(args)

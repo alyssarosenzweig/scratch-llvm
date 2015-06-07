@@ -6,7 +6,7 @@ var regexs = {
 	define: /^define ([^ ]+) ([^\(]+)\(([^\)]*)\)([^{]+){/,
 	declare: /^declare ([^ ]+) ([^\(]+)([^\)]+)\)/,
 
-	call: /^\s*call ([^ ]+) ([^\(]+)\((.+)/,
+	call: /^\s*call ([^@]+) ([^\(]+)\((.+)/,
 	ret: /^\s*ret (.+)/,
 
 	alloca: /^\s*alloca (.+)/,
