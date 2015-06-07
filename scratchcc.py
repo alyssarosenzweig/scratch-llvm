@@ -4,6 +4,7 @@
 # the Scratch linker <3
 # llvm-link a.ll b.ll -f | llvm-dis
 
+import sys
 import subprocess
 import argparse
 
@@ -48,6 +49,11 @@ for file in args.files:
         # do some string twiddling and be on our way <3
 
         llvmFiles.append(".".join(file.split(".")[0:-1]) + ".ll")
+    elif extension == 'o':
+        # they're not actually object files,
+        # just ll files in disguise :)
+
+        llvmFiles.append(file)
     else:
         print "Unknown file extension for file " + file
 
@@ -63,9 +69,11 @@ inputFile = projectName + ".lll"
 
 # finally, make the actual call
 
+meowcc = sys.argv[0][0:-len("scratchcc.py")] + "meowcc.js"
+
 if args.output:
-    subprocess.call("node meowcc.js "+inputFile+" > "+args.output, shell=True)    
+    subprocess.call("node " + meowcc + " "+inputFile+" > "+args.output, shell=True)    
 elif args.project:
-    subprocess.call("node meowcc.js "+inputFile+" "+args.project+" "+args.csrf+" "+args.session, shell=True)
+    subprocess.call("node " + meowcc + " "+inputFile+" "+args.project+" "+args.csrf+" "+args.session, shell=True)
 else:
-    subprocess.call("node meowcc.js "+inputFile, shell=True)
+    subprocess.call("node " + meow + " " +inputFile, shell=True)
