@@ -276,14 +276,7 @@ function parse(file, ffi) {
 
 					var m = m[2].match(regexs.getelementptr);
 
-					block.val = {
-						type: "addressOf",
-						base: {
-							name: m[4],
-						},
-						offset: m[6],
-						vtype: m[7]
-					}
+					block.val = matchGetElementPtr(m);
 
 					functionBlock.code.push(block);
 				} else if(regexs.ashr.test(m[2])) {
@@ -496,4 +489,15 @@ function constantExpression(func, params) {
 		console.log(func+"("+params+")");
 	}
 	return 0;
+}
+
+function matchGetElementPtr(m) {
+	return {
+		type: "addressOf",
+		base: {
+			name: m[4],
+		},
+		offset: m[6],
+		vtype: m[7]
+	}
 }
