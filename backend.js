@@ -349,14 +349,16 @@ function addressOf(ctx, n, offset) {
 }
 
 function returnBlock(ctx, val) {
-	var proc = freeLocals(ctx, true);
+    var proc = [];
+
+    if(val) {
+		proc.push(["setVar:to:", "return value", formatValue(ctx, val[0], val[1])]);
+	}
+    
+    proc = proc.concat(freeLocals(ctx, true));
 
 	if(ctx.gotoComplex) {
 		proc = proc.concat(cleanGotoComplex());
-	}
-
-	if(val) {
-		proc.push(["setVar:to:", "return value", formatValue(ctx, val[0], val[1])]);
 	}
 
 	proc.push(["stopScripts", "this script"]);
