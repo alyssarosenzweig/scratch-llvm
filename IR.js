@@ -448,11 +448,27 @@ function extracti8ArrayFromString(str) {
     return i8array;
 }
 
+function extractStandardLiteral(str) {
+    var strData = str.slice(1, -2);
+    var params = extractParamList(str);
+
+    var arr = [];
+    
+    // only extract the values
+    // typechecking is for losers :p
+    
+    params.forEach(function(p) {
+        arr.push(p[1]);
+    });
+
+    return arr;
+}
+
 function extractArrayLiteral(str) {
     if(str[0] == 'c') {
         return extracti8ArrayFromString(str);
     } else if(str[0] == '[') {
-        return JSON.parse(str);
+        return extractStandardLiteral(str);
     } else {
         return [];
     }
