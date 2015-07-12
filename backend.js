@@ -326,7 +326,7 @@ function fetchByName(ctx, n, expectedType) {
         return n
     else
         console.log("fetchByName undefined "+n);
-        console.log(ctx.locals);
+        //console.log(ctx.locals);
         return ["undefined"];
 }
 
