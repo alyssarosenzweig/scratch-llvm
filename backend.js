@@ -320,14 +320,23 @@ function fetchByName(ctx, n, expectedType) {
 
 
         return o;
-    } else if(ctx.params.indexOf(n) > -1)
+    } else if(ctx.params.indexOf(n) > -1) {
         return ["getParam", n.slice(1), "r"];
-    else if( (n * 1) == n)
+    } else if(typeof ctx.rootGlobal[n.slice(1)] !== "undefined") {
+        var rodataOffset = ctx.rootGlobal[n.slice(1)].ptr;
+        var o = ["getLine:ofList:", rodataOffset, ".rodata"];
+
+        // TODO: deal with other types of reference counts
+        // see above for sample implementation with locals
+
+        return o;
+    } else if( (n * 1) == n) {
         return n
-    else
+    } else {
         console.log("fetchByName undefined "+n);
         //console.log(ctx.locals);
         return ["undefined"];
+    }
 }
 
 function addressOf(ctx, n, offset) {

@@ -48,6 +48,8 @@ IR.rootGlobal = {};
 
 var rodataOffset = 1;
 
+// TODO: respect constant status
+
 for(var i = 0; i < IR.globals.length; ++i) {
     var global = IR.globals[i];
 
@@ -56,8 +58,12 @@ for(var i = 0; i < IR.globals.length; ++i) {
         rodataLength += global.val.length;
         rodata.contents = rodata.contents.concat(global.val);
     } else {
-        console.log("Warning: non-array global found. TODO: actually implement this");
-        console.log(global);
+        global.ptr = rodataLength + rodataOffset;
+        
+        // we can just pretend that the native bytesize is GT or equal to this type size
+        
+        rodataLength += 1;
+        rodata.contents = [global.val];
     }
 
     IR.rootGlobal[global.name] = global;
