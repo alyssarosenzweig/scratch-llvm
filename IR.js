@@ -6,7 +6,7 @@ var regexs = {
     define: /^define ([^ ]+) ([^\(]+)\(([^\)]*)\)([^{]+){/,
     declare: /^declare ([^ ]+) ([^\(]+)\(([^\)]*)\)/,
 
-    call: /^\s*call ([^@]+) ([^\(]+)\((.+)/,
+    call: /^\s*(tail )?call ([^@]+) ([^\(]+)\((.+)/,
     ret: /^\s*ret (.+)/,
 
     alloca: /^\s*alloca (.+)/,
@@ -372,9 +372,10 @@ module.exports = function(options) {
 
 // block definitions
 function callBlock(m) {
-    var returnType = m[1];
-    var funcName = m[2];
-    var paramList = m[3];
+    var tailable = m[1];
+    var returnType = m[2];
+    var funcName = m[3];
+    var paramList = m[4];
     var params = [];
 
     // due to the shear complexity of IR, we have to manually parse
@@ -384,7 +385,7 @@ function callBlock(m) {
     var paranDepth = 0;
 
     while(p < paramList.length) {
-        if(paranDepth == 0 && (paramList[p] == ',' || paramList[p] == ')')) {
+       if(paranDepth == 0 && (paramList[p] == ',' || paramList[p] == ')')) {
             if(temp.length)
                 params.push(temp.trim());
             temp = "";
