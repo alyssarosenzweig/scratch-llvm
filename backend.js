@@ -59,8 +59,9 @@ module.exports.compileFunction = function(func, IR) {
         var hasGotoComplex = functionContext.gotoComplex && functionContext.gotoComplex.okToUse && functionContext.gotoComplex.active; // this MUST be before compileInstruction for branching to work
 
         // optimize out alloca calls
-        if(func.code[i].type == "set" && func.code[i].computation == [] && func.code[i].value == 0 &&
-            func.code[i+1].type == "store" && func.code[i+1].destination.value == func.code[i].name) {
+        if(func.code[i].type == "set" && 
+           func.code[i].computation == [] && func.code[i].value == 0 &&
+           func.code[i+1].type == "store" && func.code[i+1].destination.value == func.code[i].name) {
 
             func.code[i].value = func.code[i+1].src.value;
             iGain++;
