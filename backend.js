@@ -44,7 +44,8 @@ module.exports.compileFunction = function(func, IR) {
         scopeToFree: 0,
         scoped: false,
         globals: IR.globals,
-        rootGlobal: IR.rootGlobal
+        rootGlobal: IR.rootGlobal,
+        phiAssignments: {}
     }
 
     var blockList = [module.exports.generateFunctionHat(functionContext, func)];
@@ -52,6 +53,33 @@ module.exports.compileFunction = function(func, IR) {
     if(func.inGotoComplex) {
         blockList = blockList.concat(initGotoComplex());
     }
+
+    // before we do anything, we need to look for `phi` AOT
+    // we don't do anything at this point, but we need this cached
+    // the goto complex below can work its magic to make this work
+
+    for(var i = 0; i < func.code.length; ++i) {
+        if(func.code[i].type == "set"
+          && func.code[i].val
+          && func.code[i].val.type == "phi") {
+            var node = func.code[i];
+
+            node.val.options.forEach(function(option) {
+                var value = option[0],
+                    label = option[1];
+
+                if(!functionContext.phiAssignments[label])
+                    functionContext.phiAssignments[label] = [];
+
+                functionContext.phiAssignments[label].push(
+                        [func.code[i].name,
+                         value]
+                );
+            });
+        }
+    }
+
+    console.log(functionContext.phiAssignments);
 
     for(var i = 0; i < func.code.length;) {
         var iGain = 1;
@@ -154,6 +182,8 @@ function compileInstruction(ctx, block, final) {
             val = signExtend(ctx, block.val);
         } else if(block.val.type == "trunc") {
             val = truncate(ctx, block.val);
+        } else if(block.val.type == "phi") {
+            val = 1; // TODO: backend phi
         } else if(block.val.type == "addressOf") { // todo: full getelementptr implementation
             console.log("Offset for "+block.val.base.name+" = " + block.val.offset);
             val = addressOf(ctx, block.val.base.name, block.val.offset);
