@@ -254,7 +254,7 @@ function compileInstruction(ctx, block, final) {
 
         // if there is a relevant phi instruction, we need to tap into that
         if(ctx.phiAssignments[ctx.currentLabel || 0]) {
-            output = output.concat(assignPhi(ctx, ctx.phiAssignments[ctx.currentLabel || 0]));
+            output = output.concat(assignPhi(ctx, ctx.phiAssignments[ctx.currentLabel || 0], Object.keys(ctx.phiNodes).length));
         }
 
         if(block.conditional) {
