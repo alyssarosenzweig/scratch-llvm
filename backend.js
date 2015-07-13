@@ -229,9 +229,9 @@ function compileInstruction(ctx, block, final) {
             var d1 = block.falseDest.slice(1) * 1;
             var d2 = block.dest.slice(1) * 1;
 
-            var distance = d2 - d1;
+            var distance = d1 - d2;
             
-            return absoluteBranch(["+", d1, ["*", cond, distance]]);
+            return absoluteBranch(["-", d1, ["*", cond, distance]]);
         } else {
             return absoluteBranch(block.dest);
         }
