@@ -119,6 +119,100 @@ static int t1;
 static int fp1;
 static int lim;
 
+int
+mainfp (void)
+{
+  if (in == min)
+    return fp;
+  return mfp;
+}
+
+void
+readsym (void)
+{
+  if (pend != 0)
+    {
+      sym = pend;
+      pend = 0;
+    }
+  else
+    for (;;)
+      {
+	if (pos3 == 0)
+	  {
+	    sym = consoleget ();
+	    return;
+	  }
+	sym = stored[pos3];
+	pos3 = pos3 + 1;
+	if (sym != 0)
+	  return;
+	pos3 = pos2;
+	pos2 = pos1;
+	pos1 = 0;
+      }
+}
+
+int
+readitem (void)
+{
+  do
+    {
+      type = 1;
+      do
+	{
+	  readsym ();
+	  if (sym < 0)
+	    return -1;
+	}
+      while (sym == ' ');
+      if (sym < ' ')
+	return 0;
+      if (sym >= 96)
+	sym = sym - 32;
+      type = symtype[sym];
+      if ((type & 15) != 0)
+	return 0;
+      if (type == 32)
+	{
+	  pos1 = pos2;
+	  pos2 = pos3;
+	  pos3 = (sym - 'X' << 6) + 1;
+	}
+    }
+  while (type == 32);
+  if (type == 0)
+    {
+      num = sym - '0';
+      for (;;)
+	{
+	  readsym ();
+	  if (sym < 0)
+	    return 0;
+	  pend = sym;
+	  if (sym < '0')
+	    return 0;
+	  if (sym > '9')
+	    return 0;
+	  pend = 0;
+	  num = num * 10 - '0' + sym;
+	}
+    }
+  else
+    {
+      type = 0;
+      num = 0;
+      if (sym == '*')
+	return 0;
+      num = stop + 1;
+      if (sym == '?')
+	return 0;
+      num = stop;
+    }
+  return 0;
+}
+
+
 void main() {
     for(;;) {
         psym(consoleget());
