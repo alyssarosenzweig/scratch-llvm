@@ -63,7 +63,7 @@ for(var i = 0; i < IR.globals.length; ++i) {
         // we can just pretend that the native bytesize is GT or equal to this type size
         
         rodataLength += 1;
-        rodata.contents = [global.val];
+        rodata.contents = rodata.contents.concat([global.val]);
     }
 
     IR.rootGlobal[global.name] = global;

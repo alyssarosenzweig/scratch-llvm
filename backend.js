@@ -297,19 +297,29 @@ function freeLocals(ctx, keepGlobals) {
 }
 
 function fetchByName(ctx, n, expectedType) {
+    var offsetFound = null;
+    var actualType = null;
+
     if(ctx.locals[n] !== undefined) {
-        var stackPos = stackPosFromOffset(getOffset(ctx, n));
+        offsetFound = stackPosFromOffset(getOffset(ctx, n));
+        actualType = ctx.localTypes[n];
+    } else if(ctx.rootGlobal[n.slice(1)] !== undefined){
+        offsetFound = ctx.rootGlobal[n.slice(1)].ptr;
+        actualType = ctx.rootGlobal[n.slice(1)].type + "*"; // accounts for LLVM's underlying implementation of globals
+    }
+    
+    if(offsetFound !== null) {
+        var stackPos = offsetFound; 
         var o = ["getLine:ofList:", stackPos, "DATA"];
 
         if(expectedType) {
-            var actualType = ctx.localTypes[n];
             var actualReferenceCount = actualType.split('*').length - 1;
             var expectedReferenceCount = expectedType.split('*').length - 1;
 
             if(expectedReferenceCount == actualReferenceCount - 1) {
                 // dereference
                 return ["getLine:ofList:", o, "DATA"];
-            } else if(actualReferenceCount == expectedReferenceCount + 1) {
+            } else if(expectedReferenceCount == actualReferenceCount + 1) {
                 // addressOf
                 return stackPos;
             }
@@ -322,14 +332,6 @@ function fetchByName(ctx, n, expectedType) {
         return o;
     } else if(ctx.params.indexOf(n) > -1) {
         return ["getParam", n.slice(1), "r"];
-    } else if(typeof ctx.rootGlobal[n.slice(1)] !== "undefined") {
-        var rodataOffset = ctx.rootGlobal[n.slice(1)].ptr;
-        var o = ["getLine:ofList:", rodataOffset, ".rodata"];
-
-        // TODO: deal with other types of reference counts
-        // see above for sample implementation with locals
-
-        return o;
     } else if( (n * 1) == n) {
         return n
     } else {
@@ -407,14 +409,28 @@ function callBlock(ctx, block) {
 // TODO: more robust implementation to support heap
 
 function dereferenceAndSet(ctx, ptr, content) {
-    return [
-        [
-            "setLine:ofList:to:",
-            stackPosFromOffset(getOffset(ctx, ptr)),
-            "DATA",
-            fetchByName(ctx, content)
-        ]
-    ];
+    if(ptr[0] == "@") {
+        return [
+            [
+                "setLine:ofList:to:",
+                ctx.rootGlobal[ptr.slice(1)].ptr,
+                "DATA",
+                fetchByName(ctx, content)
+            ]
+        ];
+    } else if(ptr[0] == "%") {
+        return [
+            [
+                "setLine:ofList:to:",
+                stackPosFromOffset(getOffset(ctx, ptr)),
+                "DATA",
+                fetchByName(ctx, content)
+            ]
+        ];
+    } else {
+        console.log("Unkown dereferenced variable start: "+n);
+    }
+
 }
 
 function specForComparison(comp) {
