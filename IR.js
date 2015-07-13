@@ -292,7 +292,8 @@ function parse(file, ffi) {
                                .split(",") // split by commas
                                .map(function(b) {
                                   return b.trim(); // clean up
-                               });
+                               })
+                               .concat([type]); // used in the backend
                        });
                       
                    block.val = {
@@ -365,7 +366,7 @@ function parse(file, ffi) {
                 functionBlock.code.push({
                     type: "branch",
                     conditional: false,
-                    dest: label.slice(1)
+                    dest: label
                 });
             } else if(regexs.conditionalBranch.test(lines[i])) {
                 var match = lines[i].match(regexs.conditionalBranch);

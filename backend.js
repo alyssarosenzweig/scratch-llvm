@@ -45,7 +45,8 @@ module.exports.compileFunction = function(func, IR) {
         scoped: false,
         globals: IR.globals,
         rootGlobal: IR.rootGlobal,
-        phiAssignments: {}
+        phiAssignments: {},
+        phiNodes: {}
     }
 
     var blockList = [module.exports.generateFunctionHat(functionContext, func)];
@@ -62,11 +63,9 @@ module.exports.compileFunction = function(func, IR) {
         if(func.code[i].type == "set"
           && func.code[i].val
           && func.code[i].val.type == "phi") {
-            var node = func.code[i];
-
-            node.val.options.forEach(function(option) {
+            func.code[i].val.options.forEach(function(option) {
                 var value = option[0],
-                    label = option[1];
+                    label = option[1].slice(1);
 
                 if(!functionContext.phiAssignments[label])
                     functionContext.phiAssignments[label] = [];
@@ -243,8 +242,20 @@ function compileInstruction(ctx, block, final) {
             ctx.gotoComplex.forever[1] = [ctx.gotoComplex.context];
         }
 
+        ctx.currentLabel = block.label;
+
     } else if(block.type == "branch") {
         ctx.gotoComplex.active = false;
+
+        var output = [];
+
+        console.log(ctx.phiAssignments);
+        console.log(block.dest);
+
+        // if there is a relevant phi instruction, we need to tap into that
+        if(ctx.phiAssignments[ctx.currentLabel || 0]) {
+            output = output.concat(assignPhi(ctx, ctx.phiAssignments[ctx.currentLabel || 0]));
+        }
 
         if(block.conditional) {
             var cond = block.rawCondition ? block.condition : ["=", fetchByName(ctx, block.condition), 1];
@@ -261,13 +272,37 @@ function compileInstruction(ctx, block, final) {
 
             var distance = d1 - d2;
             
-            return absoluteBranch(["-", d1, ["*", cond, distance]]);
+            output = output.concat(
+                    absoluteBranch(["-", d1, ["*", cond, distance]]));
         } else {
-            return absoluteBranch(block.dest);
+            output = output.concat(
+                    absoluteBranch(block.dest.slice(1)));
         }
+
+        return output;
     }
 
     return [];
+}
+
+function assignPhi(ctx, nodes, offset) {
+    console.log("Assigning phi nodes " + nodes);
+    offset = offset || 0;
+
+    var output = [];
+
+    nodes.forEach(function(node, num) {
+        // add it to a generic phi list
+        output.push(
+                ["setLine:ofList:to:", offset + num + 1, "phi", fetchByName(ctx, node[1], node[2])]
+        );
+
+        // create a mapping for easy access later
+        
+        ctx.phiNodes[node[0]] = offset + num + 1;
+    });
+
+    return output;
 }
 
 // fixme: stub
