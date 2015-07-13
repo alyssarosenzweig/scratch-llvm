@@ -226,8 +226,8 @@ function compileInstruction(ctx, block, final) {
             // but we *also* know the value of c-b at compile-time
             // which reduces the complexity of this immensely
             
-            var d1 = block.dest.slice(1) * 1;
-            var d2 = block.falseDest.slice(1) * 1;
+            var d1 = block.falseDest.slice(1) * 1;
+            var d2 = block.dest.slice(1) * 1;
 
             var distance = d2 - d1;
             
