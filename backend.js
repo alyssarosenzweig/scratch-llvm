@@ -218,10 +218,20 @@ function compileInstruction(ctx, block, final) {
 
         if(block.conditional) {
             var cond = block.rawCondition ? block.condition : ["=", fetchByName(ctx, block.condition), 1];
+        
+            // the ternary statement a ? b : c
+            // is equivalent to the expression,
+            // b + a*(c-b)
+            // this is an optimization by itself,
+            // but we *also* know the value of c-b at compile-time
+            // which reduces the complexity of this immensely
+            
+            var d1 = block.dest.slice(1) * 1;
+            var d2 = block.falseDest.slice(1) * 1;
 
-            return [
-                ["doIfElse", cond, absoluteBranch(block.dest.slice(1)), absoluteBranch(block.falseDest.slice(1))]
-            ];
+            var distance = d2 - d1;
+            
+            return absoluteBranch(["+", d1, ["*", cond, distance]]);
         } else {
             return absoluteBranch(block.dest);
         }
