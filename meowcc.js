@@ -35,6 +35,11 @@ backend.ffi["@puts"] = [
     ["call", "@putchar %s", 13]
 ];
 
+backend.ffi["@getchar"] = [
+    ["wait:elapsed:from:", 1],
+    ["setVar:to:", "return value", 65]
+];
+
 var tty = new (require("./meow")).ListTuple("TTY");
 tty.classicTTY();
 meow.lists.push(tty);
