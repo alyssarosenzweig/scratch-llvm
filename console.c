@@ -469,8 +469,8 @@ matched (void)
     }
 }
 
-int
-main (int argc, char **argv)
+void
+main ()
 {
   min = 1;
   sin = 2;
@@ -520,7 +520,7 @@ main (int argc, char **argv)
   breakline ();
   readline ();
 readco:
-  fflush (0);
+  //fflush (0);
   xprompt ('>');
   if (in == sin)
     xprompt ('>');
@@ -1017,7 +1017,7 @@ xi:
       i = i - 1;
     }
 xg:
-  fflush (0);
+  //fflush (0);
   xprompt (':');
   makespace ();
   i = consoleget ();
