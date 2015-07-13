@@ -278,10 +278,14 @@ function allocateLocal(ctx, val, name, type) {
 }
 
 function freeStack(num) {
-    return [
-        ["changeVar:by:", "sp", num]
-        //["doRepeat", num, [["deleteLine:ofList:", "last", "Stack"]]],
-    ];
+    if(num > 0) {
+        return [
+            ["changeVar:by:", "sp", num]
+            //["doRepeat", num, [["deleteLine:ofList:", "last", "Stack"]]],
+        ];
+    } else { // optimization on freeing nothing
+        return [];
+    }
 }
 
 function freeLocals(ctx, keepGlobals) {
