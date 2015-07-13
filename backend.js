@@ -1,5 +1,7 @@
 // takes an IR function object and returns a list of Scratch blocks
 
+spWeight = 0;
+
 module.exports.ffi = {};
 
 module.exports.generateFunctionHat = function(functionContext, func) {
@@ -62,7 +64,7 @@ module.exports.compileFunction = function(func, IR) {
 
             func.code[i].value = func.code[i+1].src.value;
             iGain++;
-        }
+        } else
 
         // optimize out icmp in conditional branch
         if(func.code[i].type == "set" && func.code[i].val.type == "comparison" &&
@@ -78,6 +80,24 @@ module.exports.compileFunction = function(func, IR) {
             };
 
             iGain++;
+        } else
+
+        // optimize out repeated set stack / change sp -1
+        if(func.code[i].type == "set" && func.code[i+1].type == "set" && func.code[i].spWeight === undefined) {
+            // count how many... it might not just be two
+            // we also rewire them in place to offset the sp
+
+            var j = 0;
+            while(func.code[i+j].type == "set"
+                  && !(func.code[i+j].val.type == "comparison"
+                       && func.code[i+j+1].type == "branch")) {
+                func.code[i+j].spWeight = j;
+                func.code[i+j].skipCleanup = true;
+
+                ++j;
+            }
+
+            func.code[i+j-1].skipCleanup = -j;
         }
 
         var instruction = compileInstruction(functionContext, func.code[i], (i + 1) == func.code.length);
@@ -117,6 +137,8 @@ function compileInstruction(ctx, block, final) {
         var val = 0;
         if(!block.val.vtype) console.log(block.val);
         var type = block.val.vtype || "";
+        
+        spWeight = block.spWeight || 0;
 
         if(block.val.type == "return value") {
             val = ["readVariable", "return value"];
@@ -153,7 +175,7 @@ function compileInstruction(ctx, block, final) {
         }
 
         return compileInstruction(ctx, block.computation)
-                .concat(allocateLocal(ctx, val, block.name, type));
+                .concat(allocateLocal(ctx, val, block.name, type, block.skipCleanup));
     } else if(block.type == "ret") {
         return returnBlock(ctx, block.value, final);
     } else if(block.type == "store") {
@@ -237,6 +259,9 @@ function getOffset(ctx, value) {
 }
 
 function stackPtr() {
+    if(spWeight !== 0)
+        return ["-", ["readVariable", "sp"], spWeight];
+
     return ["readVariable", "sp"];
 }
 
@@ -251,7 +276,7 @@ function stackPosFromOffset(offset) {
 
 // higher-level code generation
 
-function allocateLocal(ctx, val, name, type) {
+function allocateLocal(ctx, val, name, type, skipCleanup) {
     if(name) {
         var depth = 0;
 
@@ -271,10 +296,21 @@ function allocateLocal(ctx, val, name, type) {
         ctx.globalToFree++;
     }
 
-    return [
+    var out = [
         ["setLine:ofList:to:", stackPtr(), "DATA", val],
         ["changeVar:by:", "sp", -1]
     ];
+
+    if(skipCleanup !== undefined) {
+        if(skipCleanup === true)
+            out = [out[0]];
+        else {
+            out[1][2] = skipCleanup;
+            spWeight = 0; // reset everything again
+        }
+    }
+
+    return out;
 }
 
 function freeStack(num) {
