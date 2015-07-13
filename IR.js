@@ -49,6 +49,8 @@ function parse(file, ffi) {
     file = file.replace(/, align \d/g, "");
     file = file.replace(/ nsw/g, "");
     file = file.replace(/ nuw/g, "");
+    file = file.replace(/ nocapture/g, "");
+    file = file.replace(/ readonly/g, "");
 
     var lines = file.split('\n');
 
