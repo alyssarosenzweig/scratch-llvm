@@ -75,7 +75,7 @@ module.exports.compileFunction = function(func, IR) {
                 conditional: true,
                 dest: func.code[i+1].dest,
                 falseDest: func.code[i+1].falseDest,
-                condition: icmpBlock(functionContext, func.code[i]),
+                condition: icmpBlock(functionContext, func.code[i])[1],
                 rawCondition: true
             };
 
