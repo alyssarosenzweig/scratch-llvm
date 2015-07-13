@@ -397,6 +397,13 @@ function addressOf(ctx, n, offset) {
         base = ["getLine:ofList:", stackPosFromOffset(getOffset(ctx, n)), "DATA"];
 
     // then, we add the offset
+    // if necessary
+    
+    offset *= 1;
+   
+    if(offset === 0)
+        return base; // adding by zero is silly
+
     return ["+", base, offset];
 }
 
