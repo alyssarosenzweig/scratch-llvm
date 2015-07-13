@@ -80,7 +80,7 @@ module.exports.compileFunction = function(func, IR) {
             iGain++;
         }
 
-        var instruction = compileInstruction(functionContext, func.code[i]);
+        var instruction = compileInstruction(functionContext, func.code[i], (i + 1) == func.code.length);
 
         if(!functionContext.gotoInit && functionContext.gotoComplex && functionContext.gotoComplex.okToUse) {
             blockList = blockList.concat([functionContext.gotoComplex.forever]);
@@ -105,7 +105,7 @@ module.exports.compileFunction = function(func, IR) {
     return blockList;
 }
 
-function compileInstruction(ctx, block) {
+function compileInstruction(ctx, block, final) {
     if(block.type == "call") {
         // calling a (potentially foreign) function
         return callBlock(ctx, block);
@@ -155,7 +155,7 @@ function compileInstruction(ctx, block) {
         return compileInstruction(ctx, block.computation)
                 .concat(allocateLocal(ctx, val, block.name, type));
     } else if(block.type == "ret") {
-        return returnBlock(ctx, block.value);
+        return returnBlock(ctx, block.value, final);
     } else if(block.type == "store") {
         return dereferenceAndSet(ctx, block.destination.value, block.src.value);
     } else if(block.type == "gotoComplex") {
@@ -363,7 +363,7 @@ function addressOf(ctx, n, offset) {
     return ["+", base, offset];
 }
 
-function returnBlock(ctx, val) {
+function returnBlock(ctx, val, final) {
     var proc = [];
 
     if(val) {
@@ -379,7 +379,8 @@ function returnBlock(ctx, val) {
         proc = proc.concat(cleanGotoComplex());
     }
 
-    proc.push(["stopScripts", "this script"]);
+    if(!final)
+        proc.push(["stopScripts", "this script"]);
 
     return proc;
 }
