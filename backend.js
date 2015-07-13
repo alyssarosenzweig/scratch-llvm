@@ -367,7 +367,10 @@ function returnBlock(ctx, val) {
     var proc = [];
 
     if(val) {
-        proc.push(["setVar:to:", "return value", formatValue(ctx, val[0], val[1])]);
+        var ret = formatValue(ctx, val[0], val[1]);
+        
+        if(ret)
+            proc.push(["setVar:to:", "return value", ret]);
     }
     
     proc = proc.concat(freeLocals(ctx, true));
