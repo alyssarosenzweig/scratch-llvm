@@ -493,12 +493,15 @@ function constantExpression(func, params) {
         var plist = params.split(",");
         var val = plist[0].split(" ").slice(-1);
 
+        var offset = plist[2].slice(1).split(" ").slice(-1)[0];
+
         return {
             type: "getelementptr",
             base: {
                 type: plist[0].slice(0, -(val[0].length+1)),
                 val: val[0]
-            }
+            },
+            offset: offset
         }
     } else {
         console.log("Unknown constantExpression");

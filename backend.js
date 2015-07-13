@@ -154,6 +154,7 @@ function compileInstruction(ctx, block, final) {
         } else if(block.val.type == "trunc") {
             val = truncate(ctx, block.val);
         } else if(block.val.type == "addressOf") { // todo: full getelementptr implementation
+            console.log("Offset for "+block.val.base.name+" = " + block.val.offset);
             val = addressOf(ctx, block.val.base.name, block.val.offset);
         } else if(block.val.type == "srem") {
             val = ["computeFunction:of:", "floor", ["%", fetchByName(ctx, block.val.operand1), fetchByName(ctx, block.val.operand2)]]
@@ -243,7 +244,7 @@ function formatValue(ctx, type, value) {
     if(typeof value == "object") {
         if(value.type == "getelementptr") {
             // fixme: necessary and proper implementation
-            return addressOf(ctx, value.base.val);
+            return addressOf(ctx, value.base.val, value.offset);
         }
     }
 
