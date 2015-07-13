@@ -4,7 +4,7 @@ var fs = require('fs');
 
 var regexs = {
     define: /^define ([^ ]+) ([^\(]+)\(([^\)]*)\)([^{]+){/,
-    declare: /^declare ([^ ]+) ([^\(]+)([^\)]+)\)/,
+    declare: /^declare ([^ ]+) ([^\(]+)\(([^\)]*)\)/,
 
     call: /^\s*call ([^@]+) ([^\(]+)\((.+)/,
     ret: /^\s*ret (.+)/,

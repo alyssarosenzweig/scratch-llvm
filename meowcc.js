@@ -5,7 +5,7 @@ front-end to the compiler
 var IR = (require('./IR'))(
     {
         filename: process.argv[2],
-        ffi: ["@putchar", "@puts"]
+        ffi: ["@putchar", "@puts", "@getchar"]
     }
 );
 
