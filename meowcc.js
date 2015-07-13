@@ -109,6 +109,11 @@ meow.addList("DATA");
 meow.addVariable("sp");
 meow.addVariable(".data");
 
+var phi = new (require("./meow")).ListTuple("phi");
+// prepopulate with zeroes
+phi.contents = phi.contents.concat( [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0] );
+meow.lists.push(phi);
+
 var dataSectionSize = 1024;
 
 meow.addScript([
@@ -132,5 +137,5 @@ meow.addScript([
 if(process.argv[3]) {
     meow.upload(process.argv[3], 'v426', process.argv[4], process.argv[5]);
 } else {
-    //console.log(JSON.stringify(meow.serialize()));
+    console.log(JSON.stringify(meow.serialize()));
 }
