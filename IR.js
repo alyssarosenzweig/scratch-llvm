@@ -24,9 +24,9 @@ var regexs = {
     ashr: /^ashr ([^ ]+) ([^,]+), (.+)/,
     and: /^and ([^ ]+) ([^,]+), (.+)/,
     trunc: /^trunc ([^ ]+) ([^ ]+) to (.+)/,
+    phi: /^phi ([^ ]+) (.+)/,
 
     localSet: /^\s+%([^ ]+) = (.+)/,
-
     label: /; <label>:(\d+)/,
     absoluteBranch: /\s+br label (.+)/,
     conditionalBranch: /\s+br i1 ([^,]+), label ([^,]+), label (.+)/,
@@ -270,6 +270,38 @@ function parse(file, ffi) {
                     }
 
                     functionBlock.code.push(block);
+                } else if(regexs.phi.test(m[2])) {
+                   var m = m[2].match(regexs.phi);
+
+                   // phi node is a pain to do,
+                   // especially because it's syntax is not regular
+                   
+                   var type = m[1];
+                   
+                   var optionList = 
+                        m[2] // original options list
+                       .split(/\[([^\]]+)\]/) // split by regex
+
+                       .filter(function(a, b) {
+                           return b % 2; // only return every other element
+                       })
+
+                       .map(function(a) { 
+                           return a
+                               .trim() // clean it up
+                               .split(",") // split by commas
+                               .map(function(b) {
+                                  return b.trim(); // clean up
+                               });
+                       });
+                      
+                   block.val = {
+                       type: "phi",
+                       vtype: type, 
+                       options: optionList
+                   };
+
+                   functionBlock.code.push(block);
                 } else if(regexs.getelementptr.test(m[2])) {
                     console.log("getelementptr todo");
                     console.log(m);
