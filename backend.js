@@ -182,7 +182,7 @@ function compileInstruction(ctx, block, final) {
         } else if(block.val.type == "trunc") {
             val = truncate(ctx, block.val);
         } else if(block.val.type == "phi") {
-            val = 1; // TODO: backend phi
+            val = ["getLine:ofList:", ctx.phiNodes[block.name], "phi"];
         } else if(block.val.type == "addressOf") { // todo: full getelementptr implementation
             console.log("Offset for "+block.val.base.name+" = " + block.val.offset);
             val = addressOf(ctx, block.val.base.name, block.val.offset);
@@ -286,7 +286,6 @@ function compileInstruction(ctx, block, final) {
 }
 
 function assignPhi(ctx, nodes, offset) {
-    console.log("Assigning phi nodes " + nodes);
     offset = offset || 0;
 
     var output = [];
@@ -416,6 +415,8 @@ function freeLocals(ctx, keepGlobals) {
 function fetchByName(ctx, n, expectedType) {
     var offsetFound = null;
     var actualType = null;
+
+    n = n.toString(); 
 
     if(ctx.locals[n] !== undefined) {
         offsetFound = stackPosFromOffset(getOffset(ctx, n));
