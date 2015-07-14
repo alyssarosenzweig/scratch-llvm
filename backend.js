@@ -381,9 +381,8 @@ function stackPtr() {
 
 function stackPosFromOffset(offset) {
     // optimize zero-index
-    /*if(offset == 0) {
+    if(offset == 0)
         return stackPtr();
-    }*/
 
     return ["+", stackPtr(), offset];
 }
