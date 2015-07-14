@@ -78,8 +78,6 @@ module.exports.compileFunction = function(func, IR) {
         }
     }
 
-    console.log(functionContext.phiAssignments);
-
     for(var i = 0; i < func.code.length;) {
         var iGain = 1;
 
@@ -111,9 +109,7 @@ module.exports.compileFunction = function(func, IR) {
             }
 
             if(func.code[i+j+1] && func.code[i+j+1].type == "branch") {
-                console.log("We have a don't cleanup");
                 func.code[i+j+1].dontCleanup = ignored - j;
-                console.log(func.code[i+j+1]);
             } else {
                 func.code[i+lastNonIgnored].skipCleanup = -j + ignored;
             }
@@ -208,7 +204,6 @@ function compileInstruction(ctx, block, final) {
             
             return [];    
         } else if(block.val.type == "addressOf") { // todo: full getelementptr implementation
-            console.log("Offset for "+block.val.base.name+" = " + block.val.offset);
             val = addressOf(ctx, block.val.base.name, block.val.offset);
         } else if(block.val.type == "srem") {
             val = ["computeFunction:of:", "floor", ["%", fetchByName(ctx, block.val.operand1), fetchByName(ctx, block.val.operand2)]]
@@ -223,7 +218,6 @@ function compileInstruction(ctx, block, final) {
                         ];
         } else if(block.val.type == "and") {
             val = bitwise_and(fetchByName(ctx, block.val.operand1), fetchByName(ctx, block.val.operand2));
-            console.log(val);
         } else {
             console.log("Unknown equality in backend");
             console.log(block.val);
@@ -282,16 +276,11 @@ function compileInstruction(ctx, block, final) {
         // for the label ahead of us
         ctx.dontCleanup = block.dontCleanup;
 
-        console.log(block);
         spWeight -= ctx.dontCleanup || 0;
         
         // if there is a relevant phi instruction, we need to tap into that
         if(ctx.phiAssignments[ctx.currentLabel || 0]) {
             output = output.concat(assignPhi(ctx, ctx.phiAssignments[ctx.currentLabel || 0], Object.keys(ctx.phiNodes).length));
-        }
-
-        if(spWeight) {
-            console.log("We've got a cleanup");
         }
 
         if(block.conditional) {
@@ -490,7 +479,6 @@ function freeLocals(ctx, keepGlobals) {
 
     if(ctx.scoped) {
         numToFree += ctx.scopeToFree + (ctx.dontCleanup || 0);
-        console.log("Dont cleanup "+ctx.dontCleanup);
 
         ctx.dontCleanup = 0;
         ctx.scopeToFree = 0;
@@ -507,9 +495,6 @@ function fetchByName(ctx, n, expectedType) {
     n = n.toString(); 
 
     if(ctx.locals[n] !== undefined) {
-        console.log("For local "+n);
-        console.log("Offset "+getOffset(ctx,n));
-        console.log("Stack pos"+stackPosFromOffset(getOffset(ctx,n)));
         offsetFound = stackPosFromOffset(getOffset(ctx, n));
         actualType = ctx.localTypes[n];
     } else if(ctx.rootGlobal[n.slice(1)] !== undefined){
@@ -614,8 +599,6 @@ function callBlock(ctx, block) {
     if(block.returnType.indexOf("...") > -1) {
         varargs = true;
     }
-    
-    console.log(block);
     
     for(var a = 0; a < block.paramList.length; ++a) {
         args.push(formatValue(ctx, block.paramList[a][0], block.paramList[a][1]));
