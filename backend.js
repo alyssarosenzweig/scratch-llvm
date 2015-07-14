@@ -278,17 +278,18 @@ function compileInstruction(ctx, block, final) {
 
         var output = [];
 
-        // if there is a relevant phi instruction, we need to tap into that
-        if(ctx.phiAssignments[ctx.currentLabel || 0]) {
-            output = output.concat(assignPhi(ctx, ctx.phiAssignments[ctx.currentLabel || 0], Object.keys(ctx.phiNodes).length));
-        }
-
         // remember the don't cleanup
         // for the label ahead of us
         ctx.dontCleanup = block.dontCleanup;
 
         console.log(block);
         spWeight -= ctx.dontCleanup || 0;
+        
+        // if there is a relevant phi instruction, we need to tap into that
+        if(ctx.phiAssignments[ctx.currentLabel || 0]) {
+            output = output.concat(assignPhi(ctx, ctx.phiAssignments[ctx.currentLabel || 0], Object.keys(ctx.phiNodes).length));
+        }
+
         if(spWeight) {
             console.log("We've got a cleanup");
         }
@@ -566,7 +567,7 @@ function returnBlock(ctx, val, final) {
         proc = proc.concat(cleanGotoComplex());
     }
 
-    if(!final)
+    if(!final || ctx.gotoComplex)
         proc.push(["stopScripts", "this script"]);
 
     return proc;
