@@ -41,9 +41,9 @@ for file in args.files:
         # if this is a compile only build, we need to output .o instead      
         
         if args.compile:
-            subprocess.call(["clang", "-O3", "-S", "-emit-llvm", file, "-o", ".".join(file.split(".")[0:-1]) + ".o"])
+            subprocess.call(["clang", "-Oz", "-S", "-emit-llvm", file, "-o", ".".join(file.split(".")[0:-1]) + ".o"])
         else:
-            subprocess.call(["clang", "-O3", "-S", "-emit-llvm", file])
+            subprocess.call(["clang", "-Oz", "-S", "-emit-llvm", file])
   
         # this will now be the same file with a .ll extension
         # do some string twiddling and be on our way <3
