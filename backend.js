@@ -332,7 +332,7 @@ function compileInstruction(ctx, block, final) {
                     absoluteBranch(block.dest.slice(1)));
         }
 
-        spWeight += ctx.dontCleanup || 0;
+        // spWeight += ctx.dontCleanup || 0;
         return output;
     }
 
@@ -462,7 +462,10 @@ function freeLocals(ctx, keepGlobals) {
     var numToFree = !!keepGlobals * ctx.globalToFree;
 
     if(ctx.scoped) {
-        numToFree += ctx.scopeToFree - ctx.dontCleanup;
+        numToFree += ctx.scopeToFree + (ctx.dontCleanup || 0);
+        console.log("Dont cleanup "+ctx.dontCleanup);
+
+        ctx.dontCleanup = 0;
         ctx.scopeToFree = 0;
         ctx.scopedLocalDepth = 0;
     }
