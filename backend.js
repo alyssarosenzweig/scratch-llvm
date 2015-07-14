@@ -292,8 +292,21 @@ function compileInstruction(ctx, block, final) {
 
             var distance = d1 - d2;
             
+            // to shave off a byte (it counts!), ensure the signs are well formed
+            var operation = "-";
+
+            if(distance < 0) {
+                operation = "+";
+                distance *= -1;
+            }
+
+            // multiply cond by distance to get the change amount
+            
+            if(distance != 1)
+                cond = ["*", distance, cond];
+
             output = output.concat(
-                    absoluteBranch(["-", d1, ["*", cond, distance]]));
+                    absoluteBranch([operation, d1, cond]));
         } else {
             output = output.concat(
                     absoluteBranch(block.dest.slice(1)));
