@@ -4,9 +4,9 @@ var fs = require('fs');
 
 var regexs = {
     define: /^define ([^ ]+) ([^\(]+)\(([^\)]*)\)([^{]+){/,
-    declare: /^declare ([^ ]+) ([^\(]+)([^\)]+)\)/,
+    declare: /^declare ([^ ]+) ([^\(]+)\(([^\)]*)\)/,
 
-    call: /^\s*call ([^@]+) ([^\(]+)\((.+)/,
+    call: /^\s*(tail )?call ([^@]+) ([^\(]+)\((.+)/,
     ret: /^\s*ret (.+)/,
 
     alloca: /^\s*alloca (.+)/,
@@ -24,14 +24,14 @@ var regexs = {
     ashr: /^ashr ([^ ]+) ([^,]+), (.+)/,
     and: /^and ([^ ]+) ([^,]+), (.+)/,
     trunc: /^trunc ([^ ]+) ([^ ]+) to (.+)/,
+    phi: /^phi ([^ ]+) (.+)/,
 
     localSet: /^\s+%([^ ]+) = (.+)/,
-
     label: /; <label>:(\d+)/,
     absoluteBranch: /\s+br label (.+)/,
     conditionalBranch: /\s+br i1 ([^,]+), label ([^,]+), label (.+)/,
 
-    globalVar: /@([^ ]+) = (private )?(unnamed_addr )?(constant )?(global )?((\[([^\]])+\])|([^ ]+))(.+)/,
+    globalVar: /@([^ ]+) = (internal )?(private )?(unnamed_addr )?(constant )?(global )?((\[([^\]])+\])|([^ ]+))(.+)/,
 
     inlineInstruction: /([a-zA-Z ]+)\(([^\(]+)\)/
 }
@@ -49,6 +49,8 @@ function parse(file, ffi) {
     file = file.replace(/, align \d/g, "");
     file = file.replace(/ nsw/g, "");
     file = file.replace(/ nuw/g, "");
+    file = file.replace(/ nocapture/g, "");
+    file = file.replace(/ readonly/g, "");
 
     var lines = file.split('\n');
 
@@ -119,12 +121,12 @@ function parse(file, ffi) {
                 var m = lines[i].match(regexs.globalVar);
 
                 var name = m[1].trim();
-                var type = m[6].trim();
+                var type = m[7].trim();
 
                 var val = null;
 
-                if(m[10]) {
-                    val = formatValue(type, m[10].trim());
+                if(m[11]) {
+                    val = formatValue(type, m[11].trim());
                 }
 
                 mod.globals.push({
@@ -270,6 +272,39 @@ function parse(file, ffi) {
                     }
 
                     functionBlock.code.push(block);
+                } else if(regexs.phi.test(m[2])) {
+                   var m = m[2].match(regexs.phi);
+
+                   // phi node is a pain to do,
+                   // especially because it's syntax is not regular
+                   
+                   var type = m[1];
+                   
+                   var optionList = 
+                        m[2] // original options list
+                       .split(/\[([^\]]+)\]/) // split by regex
+
+                       .filter(function(a, b) {
+                           return b % 2; // only return every other element
+                       })
+
+                       .map(function(a) { 
+                           return a
+                               .trim() // clean it up
+                               .split(",") // split by commas
+                               .map(function(b) {
+                                  return b.trim(); // clean up
+                               })
+                               .concat([type]); // used in the backend
+                       });
+                      
+                   block.val = {
+                       type: "phi",
+                       vtype: type, 
+                       options: optionList
+                   };
+
+                   functionBlock.code.push(block);
                 } else if(regexs.getelementptr.test(m[2])) {
                     console.log("getelementptr todo");
                     console.log(m);
@@ -333,7 +368,7 @@ function parse(file, ffi) {
                 functionBlock.code.push({
                     type: "branch",
                     conditional: false,
-                    dest: label.slice(1)
+                    dest: label
                 });
             } else if(regexs.conditionalBranch.test(lines[i])) {
                 var match = lines[i].match(regexs.conditionalBranch);
@@ -372,9 +407,10 @@ module.exports = function(options) {
 
 // block definitions
 function callBlock(m) {
-    var returnType = m[1];
-    var funcName = m[2];
-    var paramList = m[3];
+    var tailable = m[1];
+    var returnType = m[2];
+    var funcName = m[3];
+    var paramList = m[4];
     var params = [];
 
     // due to the shear complexity of IR, we have to manually parse
@@ -384,7 +420,7 @@ function callBlock(m) {
     var paranDepth = 0;
 
     while(p < paramList.length) {
-        if(paranDepth == 0 && (paramList[p] == ',' || paramList[p] == ')')) {
+       if(paranDepth == 0 && (paramList[p] == ',' || paramList[p] == ')')) {
             if(temp.length)
                 params.push(temp.trim());
             temp = "";
@@ -448,11 +484,27 @@ function extracti8ArrayFromString(str) {
     return i8array;
 }
 
+function extractStandardLiteral(str) {
+    var strData = str.slice(1, -2);
+    var params = extractParamList(str);
+
+    var arr = [];
+    
+    // only extract the values
+    // typechecking is for losers :p
+    
+    params.forEach(function(p) {
+        arr.push(p[1]);
+    });
+
+    return arr;
+}
+
 function extractArrayLiteral(str) {
     if(str[0] == 'c') {
         return extracti8ArrayFromString(str);
     } else if(str[0] == '[') {
-        return JSON.parse(str);
+        return extractStandardLiteral(str);
     } else {
         return [];
     }
@@ -477,12 +529,15 @@ function constantExpression(func, params) {
         var plist = params.split(",");
         var val = plist[0].split(" ").slice(-1);
 
+        var offset = plist[2].slice(1).split(" ").slice(-1)[0];
+
         return {
             type: "getelementptr",
             base: {
                 type: plist[0].slice(0, -(val[0].length+1)),
                 val: val[0]
-            }
+            },
+            offset: offset
         }
     } else {
         console.log("Unknown constantExpression");

@@ -5,7 +5,7 @@ front-end to the compiler
 var IR = (require('./IR'))(
     {
         filename: process.argv[2],
-        ffi: ["@putchar", "@puts"]
+        ffi: ["@putchar", "@puts", "@getchar"]
     }
 );
 
@@ -35,6 +35,11 @@ backend.ffi["@puts"] = [
     ["call", "@putchar %s", 13]
 ];
 
+backend.ffi["@getchar"] = [
+    ["wait:elapsed:from:", 1],
+    ["setVar:to:", "return value", 65]
+];
+
 var tty = new (require("./meow")).ListTuple("TTY");
 tty.classicTTY();
 meow.lists.push(tty);
@@ -48,6 +53,8 @@ IR.rootGlobal = {};
 
 var rodataOffset = 1;
 
+// TODO: respect constant status
+
 for(var i = 0; i < IR.globals.length; ++i) {
     var global = IR.globals[i];
 
@@ -56,8 +63,12 @@ for(var i = 0; i < IR.globals.length; ++i) {
         rodataLength += global.val.length;
         rodata.contents = rodata.contents.concat(global.val);
     } else {
-        console.log("Warning: non-array global found. TODO: actually implement this");
-        console.log(global);
+        global.ptr = rodataLength + rodataOffset;
+        
+        // we can just pretend that the native bytesize is GT or equal to this type size
+        
+        rodataLength += 1;
+        rodata.contents = rodata.contents.concat([global.val]);
     }
 
     IR.rootGlobal[global.name] = global;
@@ -98,6 +109,11 @@ meow.addList("DATA");
 meow.addVariable("sp");
 meow.addVariable(".data");
 
+var phi = new (require("./meow")).ListTuple("phi");
+// prepopulate with zeroes
+phi.contents = phi.contents.concat( [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0] );
+meow.lists.push(phi);
+
 var dataSectionSize = 1024;
 
 meow.addScript([
@@ -121,5 +137,5 @@ meow.addScript([
 if(process.argv[3]) {
     meow.upload(process.argv[3], 'v426', process.argv[4], process.argv[5]);
 } else {
-    //console.log(JSON.stringify(meow.serialize()));
+    console.log(JSON.stringify(meow.serialize()));
 }

@@ -1,5 +1,7 @@
 // takes an IR function object and returns a list of Scratch blocks
 
+spWeight = 0;
+
 module.exports.ffi = {};
 
 module.exports.generateFunctionHat = function(functionContext, func) {
@@ -42,7 +44,9 @@ module.exports.compileFunction = function(func, IR) {
         scopeToFree: 0,
         scoped: false,
         globals: IR.globals,
-        rootGlobal: IR.rootGlobal
+        rootGlobal: IR.rootGlobal,
+        phiAssignments: {},
+        phiNodes: {}
     }
 
     var blockList = [module.exports.generateFunctionHat(functionContext, func)];
@@ -51,18 +55,44 @@ module.exports.compileFunction = function(func, IR) {
         blockList = blockList.concat(initGotoComplex());
     }
 
+    // before we do anything, we need to look for `phi` AOT
+    // we don't do anything at this point, but we need this cached
+    // the goto complex below can work its magic to make this work
+
+    for(var i = 0; i < func.code.length; ++i) {
+        if(func.code[i].type == "set"
+          && func.code[i].val
+          && func.code[i].val.type == "phi") {
+            func.code[i].val.options.forEach(function(option) {
+                var value = option[0],
+                    label = option[1].slice(1);
+
+                if(!functionContext.phiAssignments[label])
+                    functionContext.phiAssignments[label] = [];
+
+                functionContext.phiAssignments[label].push(
+                        [func.code[i].name,
+                         value]
+                );
+            });
+        }
+    }
+
+    console.log(functionContext.phiAssignments);
+
     for(var i = 0; i < func.code.length;) {
         var iGain = 1;
 
         var hasGotoComplex = functionContext.gotoComplex && functionContext.gotoComplex.okToUse && functionContext.gotoComplex.active; // this MUST be before compileInstruction for branching to work
 
         // optimize out alloca calls
-        if(func.code[i].type == "set" && func.code[i].computation == [] && func.code[i].value == 0 &&
-            func.code[i+1].type == "store" && func.code[i+1].destination.value == func.code[i].name) {
+        if(func.code[i].type == "set" && 
+           func.code[i].computation == [] && func.code[i].value == 0 &&
+           func.code[i+1].type == "store" && func.code[i+1].destination.value == func.code[i].name) {
 
             func.code[i].value = func.code[i+1].src.value;
             iGain++;
-        }
+        } else
 
         // optimize out icmp in conditional branch
         if(func.code[i].type == "set" && func.code[i].val.type == "comparison" &&
@@ -73,14 +103,43 @@ module.exports.compileFunction = function(func, IR) {
                 conditional: true,
                 dest: func.code[i+1].dest,
                 falseDest: func.code[i+1].falseDest,
-                condition: icmpBlock(functionContext, func.code[i]),
+                condition: icmpBlock(functionContext, func.code[i])[1],
                 rawCondition: true
             };
 
             iGain++;
+        } else
+
+        // optimize out repeated set stack / change sp -1
+        if(func.code[i].type == "set" && func.code[i+1].type == "set" && func.code[i].spWeight === undefined) {
+            // count how many... it might not just be two
+            // we also rewire them in place to offset the sp
+
+            var j = 0;
+            var ignored = 0;
+            var lastNonIgnored = 0;
+
+            while(func.code[i+j].type == "set"
+                  && !(func.code[i+j].val.type == "comparison"
+                       && func.code[i+j+1].type == "branch")) {
+                
+
+                func.code[i+j].spWeight = j - ignored;
+                func.code[i+j].skipCleanup = true;
+
+                if(func.code[i+j].val.type == "phi") {
+                    ignored++;
+                } else {
+                    lastNonIgnored = j;
+                }
+
+                ++j;
+            }
+
+            func.code[i+lastNonIgnored].skipCleanup = -j + ignored;
         }
 
-        var instruction = compileInstruction(functionContext, func.code[i]);
+        var instruction = compileInstruction(functionContext, func.code[i], (i + 1) == func.code.length);
 
         if(!functionContext.gotoInit && functionContext.gotoComplex && functionContext.gotoComplex.okToUse) {
             blockList = blockList.concat([functionContext.gotoComplex.forever]);
@@ -105,7 +164,7 @@ module.exports.compileFunction = function(func, IR) {
     return blockList;
 }
 
-function compileInstruction(ctx, block) {
+function compileInstruction(ctx, block, final) {
     if(block.type == "call") {
         // calling a (potentially foreign) function
         return callBlock(ctx, block);
@@ -117,6 +176,8 @@ function compileInstruction(ctx, block) {
         var val = 0;
         if(!block.val.vtype) console.log(block.val);
         var type = block.val.vtype || "";
+        
+        spWeight = block.spWeight || 0;
 
         if(block.val.type == "return value") {
             val = ["readVariable", "return value"];
@@ -131,7 +192,14 @@ function compileInstruction(ctx, block) {
             val = signExtend(ctx, block.val);
         } else if(block.val.type == "trunc") {
             val = truncate(ctx, block.val);
+        } else if(block.val.type == "phi") {
+            // it's not necessary to actually do anything here
+            // but we *do* need to signal the caller that nothing should happen
+            // else the stack gets all messy 
+            
+            return [];    
         } else if(block.val.type == "addressOf") { // todo: full getelementptr implementation
+            console.log("Offset for "+block.val.base.name+" = " + block.val.offset);
             val = addressOf(ctx, block.val.base.name, block.val.offset);
         } else if(block.val.type == "srem") {
             val = ["computeFunction:of:", "floor", ["%", fetchByName(ctx, block.val.operand1), fetchByName(ctx, block.val.operand2)]]
@@ -152,10 +220,15 @@ function compileInstruction(ctx, block) {
             console.log(block.val);
         }
 
-        return compileInstruction(ctx, block.computation)
-                .concat(allocateLocal(ctx, val, block.name, type));
+        var computedInstructions = compileInstruction(ctx, block.computation);
+
+        /*if(computedInstructions === null) // short-circuit, used for implementing phi
+            return [];*/
+
+        return computedInstructions
+                .concat(allocateLocal(ctx, val, block.name, type, block.skipCleanup));
     } else if(block.type == "ret") {
-        return returnBlock(ctx, block.value);
+        return returnBlock(ctx, block.value, final);
     } else if(block.type == "store") {
         return dereferenceAndSet(ctx, block.destination.value, block.src.value);
     } else if(block.type == "gotoComplex") {
@@ -189,21 +262,84 @@ function compileInstruction(ctx, block) {
             ctx.gotoComplex.forever[1] = [ctx.gotoComplex.context];
         }
 
+        ctx.currentLabel = block.label;
+
     } else if(block.type == "branch") {
         ctx.gotoComplex.active = false;
 
+        var output = [];
+
+        console.log(ctx.phiAssignments);
+        console.log(block.dest);
+
+        // if there is a relevant phi instruction, we need to tap into that
+        if(ctx.phiAssignments[ctx.currentLabel || 0]) {
+            output = output.concat(assignPhi(ctx, ctx.phiAssignments[ctx.currentLabel || 0], Object.keys(ctx.phiNodes).length));
+        }
+
         if(block.conditional) {
             var cond = block.rawCondition ? block.condition : ["=", fetchByName(ctx, block.condition), 1];
+        
+            // the ternary statement a ? b : c
+            // is equivalent to the expression,
+            // b + a*(c-b)
+            // this is an optimization by itself,
+            // but we *also* know the value of c-b at compile-time
+            // which reduces the complexity of this immensely
+            
+            var d1 = block.falseDest.slice(1) * 1;
+            var d2 = block.dest.slice(1) * 1;
 
-            return [
-                ["doIfElse", cond, absoluteBranch(block.dest.slice(1)), absoluteBranch(block.falseDest.slice(1))]
-            ];
+            var distance = d1 - d2;
+            
+            // to shave off a byte (it counts!), ensure the signs are well formed
+            var operation = "-";
+
+            if(distance < 0) {
+                operation = "+";
+                distance *= -1;
+            }
+
+            // multiply cond by distance to get the change amount
+            
+            if(distance != 1)
+                cond = ["*", distance, cond];
+
+            output = output.concat(
+                    absoluteBranch([operation, d1, cond]));
         } else {
-            return absoluteBranch(block.dest);
+            output = output.concat(
+                    absoluteBranch(block.dest.slice(1)));
         }
+
+        return output;
     }
 
     return [];
+}
+
+function assignPhi(ctx, nodes, offset) {
+    offset = offset || 0;
+
+    var output = [];
+
+    nodes.forEach(function(node, num) {
+        // if this variable is already accounted for,
+        // don't generate a new offset for it
+        
+        var off = ctx.phiNodes[node[0]] || (offset + num + 1);
+        
+        // add it to a generic phi list
+        output.push(
+                ["setLine:ofList:to:", off, "phi", fetchByName(ctx, node[1], node[2])]
+        );
+
+        // create a mapping for easy access later
+        
+        ctx.phiNodes[node[0]] = off; 
+    });
+
+    return output;
 }
 
 // fixme: stub
@@ -221,7 +357,7 @@ function formatValue(ctx, type, value) {
     if(typeof value == "object") {
         if(value.type == "getelementptr") {
             // fixme: necessary and proper implementation
-            return addressOf(ctx, value.base.val);
+            return addressOf(ctx, value.base.val, value.offset);
         }
     }
 
@@ -237,6 +373,9 @@ function getOffset(ctx, value) {
 }
 
 function stackPtr() {
+    if(spWeight !== 0)
+        return ["-", ["readVariable", "sp"], spWeight];
+
     return ["readVariable", "sp"];
 }
 
@@ -251,7 +390,7 @@ function stackPosFromOffset(offset) {
 
 // higher-level code generation
 
-function allocateLocal(ctx, val, name, type) {
+function allocateLocal(ctx, val, name, type, skipCleanup) {
     if(name) {
         var depth = 0;
 
@@ -271,17 +410,32 @@ function allocateLocal(ctx, val, name, type) {
         ctx.globalToFree++;
     }
 
-    return [
+    var out = [
         ["setLine:ofList:to:", stackPtr(), "DATA", val],
         ["changeVar:by:", "sp", -1]
     ];
+
+    if(skipCleanup !== undefined) {
+        if(skipCleanup === true)
+            out = [out[0]];
+        else {
+            out[1][2] = skipCleanup;
+            spWeight = 0; // reset everything again
+        }
+    }
+
+    return out;
 }
 
 function freeStack(num) {
-    return [
-        ["changeVar:by:", "sp", num]
-        //["doRepeat", num, [["deleteLine:ofList:", "last", "Stack"]]],
-    ];
+    if(num > 0) {
+        return [
+            ["changeVar:by:", "sp", num]
+            //["doRepeat", num, [["deleteLine:ofList:", "last", "Stack"]]],
+        ];
+    } else { // optimization on freeing nothing
+        return [];
+    }
 }
 
 function freeLocals(ctx, keepGlobals) {
@@ -297,19 +451,31 @@ function freeLocals(ctx, keepGlobals) {
 }
 
 function fetchByName(ctx, n, expectedType) {
+    var offsetFound = null;
+    var actualType = null;
+
+    n = n.toString(); 
+
     if(ctx.locals[n] !== undefined) {
-        var stackPos = stackPosFromOffset(getOffset(ctx, n));
+        offsetFound = stackPosFromOffset(getOffset(ctx, n));
+        actualType = ctx.localTypes[n];
+    } else if(ctx.rootGlobal[n.slice(1)] !== undefined){
+        offsetFound = ctx.rootGlobal[n.slice(1)].ptr;
+        actualType = ctx.rootGlobal[n.slice(1)].type + "*"; // accounts for LLVM's underlying implementation of globals
+    }
+    
+    if(offsetFound !== null) {
+        var stackPos = offsetFound; 
         var o = ["getLine:ofList:", stackPos, "DATA"];
 
         if(expectedType) {
-            var actualType = ctx.localTypes[n];
             var actualReferenceCount = actualType.split('*').length - 1;
             var expectedReferenceCount = expectedType.split('*').length - 1;
 
             if(expectedReferenceCount == actualReferenceCount - 1) {
                 // dereference
                 return ["getLine:ofList:", o, "DATA"];
-            } else if(actualReferenceCount == expectedReferenceCount + 1) {
+            } else if(expectedReferenceCount == actualReferenceCount + 1) {
                 // addressOf
                 return stackPos;
             }
@@ -320,14 +486,17 @@ function fetchByName(ctx, n, expectedType) {
 
 
         return o;
-    } else if(ctx.params.indexOf(n) > -1)
+    } else if(ctx.params.indexOf(n) > -1) {
         return ["getParam", n.slice(1), "r"];
-    else if( (n * 1) == n)
+    } else if(ctx.phiNodes[n] !== undefined) {
+        return ["getLine:ofList:", ctx.phiNodes[n], "phi"];
+    } else if( (n * 1) == n) {
         return n
-    else
+    } else {
         console.log("fetchByName undefined "+n);
-        console.log(ctx.locals);
+        //console.log(ctx.locals);
         return ["undefined"];
+    }
 }
 
 function addressOf(ctx, n, offset) {
@@ -345,14 +514,24 @@ function addressOf(ctx, n, offset) {
         base = ["getLine:ofList:", stackPosFromOffset(getOffset(ctx, n)), "DATA"];
 
     // then, we add the offset
+    // if necessary
+    
+    offset *= 1;
+   
+    if(offset === 0)
+        return base; // adding by zero is silly
+
     return ["+", base, offset];
 }
 
-function returnBlock(ctx, val) {
+function returnBlock(ctx, val, final) {
     var proc = [];
 
     if(val) {
-        proc.push(["setVar:to:", "return value", formatValue(ctx, val[0], val[1])]);
+        var ret = formatValue(ctx, val[0], val[1]);
+        
+        if(ret)
+            proc.push(["setVar:to:", "return value", ret]);
     }
     
     proc = proc.concat(freeLocals(ctx, true));
@@ -361,7 +540,8 @@ function returnBlock(ctx, val) {
         proc = proc.concat(cleanGotoComplex());
     }
 
-    proc.push(["stopScripts", "this script"]);
+    if(!final)
+        proc.push(["stopScripts", "this script"]);
 
     return proc;
 }
@@ -398,14 +578,28 @@ function callBlock(ctx, block) {
 // TODO: more robust implementation to support heap
 
 function dereferenceAndSet(ctx, ptr, content) {
-    return [
-        [
-            "setLine:ofList:to:",
-            stackPosFromOffset(getOffset(ctx, ptr)),
-            "DATA",
-            fetchByName(ctx, content)
-        ]
-    ];
+    if(ptr[0] == "@") {
+        return [
+            [
+                "setLine:ofList:to:",
+                ctx.rootGlobal[ptr.slice(1)].ptr,
+                "DATA",
+                fetchByName(ctx, content)
+            ]
+        ];
+    } else if(ptr[0] == "%") {
+        return [
+            [
+                "setLine:ofList:to:",
+                stackPosFromOffset(getOffset(ctx, ptr)),
+                "DATA",
+                fetchByName(ctx, content)
+            ]
+        ];
+    } else {
+        console.log("Unkown dereferenced variable start: "+n);
+    }
+
 }
 
 function specForComparison(comp) {
