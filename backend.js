@@ -116,16 +116,27 @@ module.exports.compileFunction = function(func, IR) {
             // we also rewire them in place to offset the sp
 
             var j = 0;
+            var ignored = 0;
+            var lastNonIgnored = 0;
+
             while(func.code[i+j].type == "set"
                   && !(func.code[i+j].val.type == "comparison"
                        && func.code[i+j+1].type == "branch")) {
-                func.code[i+j].spWeight = j;
+                
+
+                func.code[i+j].spWeight = j - ignored;
                 func.code[i+j].skipCleanup = true;
+
+                if(func.code[i+j].val.type == "phi") {
+                    ignored++;
+                } else {
+                    lastNonIgnored = j;
+                }
 
                 ++j;
             }
 
-            func.code[i+j-1].skipCleanup = -j;
+            func.code[i+lastNonIgnored].skipCleanup = -j + ignored;
         }
 
         var instruction = compileInstruction(functionContext, func.code[i], (i + 1) == func.code.length);
