@@ -194,7 +194,8 @@ function parse(file, ffi) {
                         type: "arithmetic",
                         operation: "+",
                         operand1: m[2],
-                        operand2: m[3]
+                        operand2: m[3],
+                        vtype: m[1]
                     };
 
                     functionBlock.code.push(block);
@@ -204,7 +205,8 @@ function parse(file, ffi) {
                         type: "arithmetic",
                         operation: "-",
                         operand1: m[2],
-                        operand2: m[3]
+                        operand2: m[3],
+                        vtype: m[1]
                     };
 
                     functionBlock.code.push(block);
@@ -214,7 +216,8 @@ function parse(file, ffi) {
                         type: "arithmetic",
                         operation: "*",
                         operand1: m[2],
-                        operand2: m[3]
+                        operand2: m[3],
+                        vtype: m[1]
                     };
 
                     functionBlock.code.push(block);
@@ -225,7 +228,8 @@ function parse(file, ffi) {
                         signed: m[1],
                         operation: "/",
                         operand1: m[3],
-                        operand2: m[4]
+                        operand2: m[4],
+                        vtype: m[1]
                     };
 
                     functionBlock.code.push(block);
