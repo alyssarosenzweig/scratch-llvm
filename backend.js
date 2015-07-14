@@ -84,32 +84,6 @@ module.exports.compileFunction = function(func, IR) {
         var iGain = 1;
 
         var hasGotoComplex = functionContext.gotoComplex && functionContext.gotoComplex.okToUse && functionContext.gotoComplex.active; // this MUST be before compileInstruction for branching to work
-
-        // optimize out alloca calls
-        if(func.code[i].type == "set" && 
-           func.code[i].computation == [] && func.code[i].value == 0 &&
-           func.code[i+1].type == "store" && func.code[i+1].destination.value == func.code[i].name) {
-
-            func.code[i].value = func.code[i+1].src.value;
-            iGain++;
-        } else
-
-        // optimize out icmp in conditional branch
-        if(func.code[i].type == "set" && func.code[i].val.type == "comparison" &&
-            func.code[i+1].type == "branch" && func.code[i+1].conditional && func.code[i+1].condition == func.code[i].name) {
-
-            func.code[i] = {
-                type: "branch",
-                conditional: true,
-                dest: func.code[i+1].dest,
-                falseDest: func.code[i+1].falseDest,
-                condition: icmpBlock(functionContext, func.code[i])[1],
-                rawCondition: true
-            };
-
-            iGain++;
-        } else
-
         // optimize out repeated set stack / change sp -1
         if(func.code[i].type == "set" && func.code[i+1].type == "set" && func.code[i].spWeight === undefined) {
             // count how many... it might not just be two
@@ -124,20 +98,55 @@ module.exports.compileFunction = function(func, IR) {
                        && func.code[i+j+1].type == "branch")) {
                 
 
-                func.code[i+j].spWeight = j - ignored;
-                func.code[i+j].skipCleanup = true;
-
                 if(func.code[i+j].val.type == "phi") {
                     ignored++;
                 } else {
                     lastNonIgnored = j;
+                    func.code[i+j].spWeight = j - ignored;
+                    func.code[i+j].skipCleanup = true;
+
                 }
 
                 ++j;
             }
 
-            func.code[i+lastNonIgnored].skipCleanup = -j + ignored;
+            if(func.code[i+j+1] && func.code[i+j+1].type == "branch") {
+                console.log("We have a don't cleanup");
+                func.code[i+j+1].dontCleanup = ignored - j;
+                console.log(func.code[i+j+1]);
+            } else {
+                func.code[i+lastNonIgnored].skipCleanup = -j + ignored;
+            }
         }
+        
+        // optimize out alloca calls
+        if(func.code[i].type == "set" && 
+           func.code[i].computation == [] && func.code[i].value == 0 &&
+           func.code[i+1].type == "store" && func.code[i+1].destination.value == func.code[i].name) {
+
+            func.code[i].value = func.code[i+1].src.value;
+            iGain++;
+        }
+
+        // optimize out icmp in conditional branch
+        if(func.code[i].type == "set" && func.code[i].val.type == "comparison" &&
+            func.code[i+1].type == "branch" && func.code[i+1].conditional && func.code[i+1].condition == func.code[i].name) {
+
+            func.code[i] = {
+                type: "branch",
+                conditional: true,
+                dest: func.code[i+1].dest,
+                falseDest: func.code[i+1].falseDest,
+                generateCondition: true,
+                rawCondition: true,
+                val: func.code[i].val,
+                dontCleanup: func.code[i+1].dontCleanup
+            };
+
+            iGain++;
+        }
+
+        
 
         var instruction = compileInstruction(functionContext, func.code[i], (i + 1) == func.code.length);
 
@@ -269,15 +278,26 @@ function compileInstruction(ctx, block, final) {
 
         var output = [];
 
-        console.log(ctx.phiAssignments);
-        console.log(block.dest);
-
         // if there is a relevant phi instruction, we need to tap into that
         if(ctx.phiAssignments[ctx.currentLabel || 0]) {
             output = output.concat(assignPhi(ctx, ctx.phiAssignments[ctx.currentLabel || 0], Object.keys(ctx.phiNodes).length));
         }
 
+        // remember the don't cleanup
+        // for the label ahead of us
+        ctx.dontCleanup = block.dontCleanup;
+
+        console.log(block);
+        spWeight -= ctx.dontCleanup || 0;
+        if(spWeight) {
+            console.log("We've got a cleanup");
+        }
+
         if(block.conditional) {
+            if(block.generateCondition) {
+                block.condition = icmpBlock(ctx, block)[1];
+            }
+
             var cond = block.rawCondition ? block.condition : ["=", fetchByName(ctx, block.condition), 1];
         
             // the ternary statement a ? b : c
@@ -312,6 +332,7 @@ function compileInstruction(ctx, block, final) {
                     absoluteBranch(block.dest.slice(1)));
         }
 
+        spWeight += ctx.dontCleanup || 0;
         return output;
     }
 
@@ -441,7 +462,7 @@ function freeLocals(ctx, keepGlobals) {
     var numToFree = !!keepGlobals * ctx.globalToFree;
 
     if(ctx.scoped) {
-        numToFree += ctx.scopeToFree;
+        numToFree += ctx.scopeToFree - ctx.dontCleanup;
         ctx.scopeToFree = 0;
         ctx.scopedLocalDepth = 0;
     }
@@ -456,6 +477,9 @@ function fetchByName(ctx, n, expectedType) {
     n = n.toString(); 
 
     if(ctx.locals[n] !== undefined) {
+        console.log("For local "+n);
+        console.log("Offset "+getOffset(ctx,n));
+        console.log("Stack pos"+stackPosFromOffset(getOffset(ctx,n)));
         offsetFound = stackPosFromOffset(getOffset(ctx, n));
         actualType = ctx.localTypes[n];
     } else if(ctx.rootGlobal[n.slice(1)] !== undefined){
