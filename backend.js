@@ -311,14 +311,19 @@ function assignPhi(ctx, nodes, offset) {
     var output = [];
 
     nodes.forEach(function(node, num) {
+        // if this variable is already accounted for,
+        // don't generate a new offset for it
+        
+        var off = ctx.phiNodes[node[0]] || (offset + num + 1);
+        
         // add it to a generic phi list
         output.push(
-                ["setLine:ofList:to:", offset + num + 1, "phi", fetchByName(ctx, node[1], node[2])]
+                ["setLine:ofList:to:", off, "phi", fetchByName(ctx, node[1], node[2])]
         );
 
         // create a mapping for easy access later
         
-        ctx.phiNodes[node[0]] = offset + num + 1;
+        ctx.phiNodes[node[0]] = off; 
     });
 
     return output;
