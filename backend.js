@@ -182,7 +182,11 @@ function compileInstruction(ctx, block, final) {
         } else if(block.val.type == "trunc") {
             val = truncate(ctx, block.val);
         } else if(block.val.type == "phi") {
-            val = ["getLine:ofList:", ctx.phiNodes[block.name], "phi"];
+            // it's not necessary to actually do anything here
+            // but we *do* need to signal the caller that nothing should happen
+            // else the stack gets all messy 
+            
+            return [];    
         } else if(block.val.type == "addressOf") { // todo: full getelementptr implementation
             console.log("Offset for "+block.val.base.name+" = " + block.val.offset);
             val = addressOf(ctx, block.val.base.name, block.val.offset);
@@ -205,7 +209,12 @@ function compileInstruction(ctx, block, final) {
             console.log(block.val);
         }
 
-        return compileInstruction(ctx, block.computation)
+        var computedInstructions = compileInstruction(ctx, block.computation);
+
+        /*if(computedInstructions === null) // short-circuit, used for implementing phi
+            return [];*/
+
+        return computedInstructions
                 .concat(allocateLocal(ctx, val, block.name, type, block.skipCleanup));
     } else if(block.type == "ret") {
         return returnBlock(ctx, block.value, final);
@@ -450,6 +459,8 @@ function fetchByName(ctx, n, expectedType) {
         return o;
     } else if(ctx.params.indexOf(n) > -1) {
         return ["getParam", n.slice(1), "r"];
+    } else if(ctx.phiNodes[n] !== undefined) {
+        return ["getLine:ofList:", ctx.phiNodes[n], "phi"];
     } else if( (n * 1) == n) {
         return n
     } else {
