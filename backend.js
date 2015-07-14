@@ -401,12 +401,38 @@ function stackPtr() {
     return ["readVariable", "sp"];
 }
 
-function stackPosFromOffset(offset) {
+function stackPosFromOffset(offset, otherOffset) {
+    var rOffset = offset + (otherOffset || 0);
+    
     // optimize zero-index
-    if(offset == 0)
+    if(rOffset == 0)
         return stackPtr();
 
-    return ["+", stackPtr(), offset];
+    // is there an spWeight?
+    var ptr = stackPtr();
+    
+    if(ptr[0] == "-") {
+        // if so, we'll subtract rOffset from the subtrahend
+        
+        ptr[2] -= rOffset;
+
+        // to potentially shave off another byte, flip the signs if necessary
+        if(ptr[2] <= 0) {
+            ptr[2] *= -1;
+            ptr[0] = "+";
+        }
+
+        // and if ptr[2] IS zero, this is all redundant!
+        if(ptr[2] == 0) {
+            return ptr[1];
+        }
+
+        return ptr;
+    }
+
+    // else, if stackPtr is normal, we go about our business normally
+
+    return ["+", stackPtr(), rOffset];
 }
 
 // higher-level code generation
@@ -537,8 +563,14 @@ function addressOf(ctx, n, offset) {
 
     if(ctx.rootGlobal[n.slice(1)])
         base = ctx.rootGlobal[n.slice(1)].ptr;
-    else if(ctx.locals[n])
-        base = ["getLine:ofList:", stackPosFromOffset(getOffset(ctx, n)), "DATA"];
+    else if(ctx.locals[n]) {
+        base = ["getLine:ofList:", stackPosFromOffset(getOffset(ctx, n), offset), "DATA"];
+        offset = 0;
+        
+        // as an optimization, we let the above functions do the underlying math,
+        // as they have more context than we do,
+        // so they're able to safely perform more aggresive optimizations
+    }
 
     // then, we add the offset
     // if necessary
