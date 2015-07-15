@@ -5,6 +5,7 @@ var fs = require('fs');
 var regexs = {
     define: /^define ([^ ]+) ([^\(]+)\(([^\)]*)\)([^{]+){/,
     declare: /^declare ([^ ]+) ([^\(]+)\(([^\)]*)\)/,
+    newType: /^([^ ]+) = type \{([^\}]+)\}$/,
 
     call: /^\s*(tail )?call ([^@]+) ([^\(]+)\((.+)/,
     ret: /^\s*ret (.+)/,
@@ -57,7 +58,8 @@ function parse(file, ffi) {
 
     var mod = {
         functions: [],
-        globals: []
+        globals: [],
+        types: []
     };
 
     var inFunctionBlock = false;
@@ -135,6 +137,15 @@ function parse(file, ffi) {
                     type: type,
                     val: val
                 });
+            } else if(regexs.newType.test(lines[i])) {
+                var m = lines[i].match(regexs.newType);
+                
+                var newType = m[1];
+                var contents = m[2].split(",").map(function(a) {
+                    return a.trim();
+                });
+
+                mod.types[newType] = contents;
             }
         } else {
             if(lines[i] == "}") {

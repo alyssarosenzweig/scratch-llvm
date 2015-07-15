@@ -1,4 +1,4 @@
-function LLVMType(str) {
+function LLVMType(mod, str) {
 	if(str[0] == "[") {
 		bareStr = str.slice(1, -1);
 		str = bareStr.split(" x ");
