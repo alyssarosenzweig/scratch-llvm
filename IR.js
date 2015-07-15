@@ -186,7 +186,8 @@ function parse(file, ffi) {
                     var m = m[2].match(regexs.alloca);
 
                     block.val = {
-                        vtype: m[1]+"*"
+                        vtype: m[1]+"*",
+                        type: "alloca"
                     }
 
                     functionBlock.code.push(block);

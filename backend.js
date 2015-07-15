@@ -46,7 +46,8 @@ module.exports.compileFunction = function(func, IR) {
         globals: IR.globals,
         rootGlobal: IR.rootGlobal,
         phiAssignments: {},
-        phiNodes: {}
+        phiNodes: {},
+        types: IR.types
     }
 
     var blockList = [module.exports.generateFunctionHat(functionContext, func)];
@@ -94,7 +95,18 @@ module.exports.compileFunction = function(func, IR) {
             while(func.code[i+j].type == "set"
                   && !(func.code[i+j].val.type == "comparison"
                        && func.code[i+j+1].type == "branch")) {
-                
+               
+                if(func.code[i+j].val.type == "alloca") {
+                    // we basically need to implement alloca here completely
+                    // because optimizations yall
+                    
+                    ignored++;
+
+                    var size = sizeForType(functionContext, func.code[i+j].val.vtype.slice(0, -1));
+                    if(size != 1) {
+                        ignored -= size;
+                    }
+                } 
 
                 if(func.code[i+j].val.type == "phi") {
                     ignored++;
@@ -189,6 +201,15 @@ function compileInstruction(ctx, block, final) {
         } else if(block.val.type == "variable") {
             val = fetchByName(ctx, block.val.name, block.val.vtype);
             type = block.val.vtype;
+        } else if(block.val.type == "alloca") {
+            // we may not need to anything for alloca
+            // in fact, in many cases we're only allocating one element
+           
+            var size = sizeForType(ctx, block.val.vtype.slice(0, -1)); // not a pointer here
+            if(size != 1) {
+                // if it's worth more, we need to allocate more
+                _allocateLocal(ctx, size - 1);
+            } 
         } else if(block.val.type == "arithmetic") {
             val = [block.val.operation, fetchByName(ctx, block.val.operand1), fetchByName(ctx, block.val.operand2)];
         } else if(block.val.type == "comparison") {
@@ -364,6 +385,23 @@ function specifierForType(type) {
 }
 
 // fixme: stub
+function sizeForType(ctx, type) {
+    if(type[0] == "i") {
+        return 1; // single element is standard :)
+    } else if(type[type.length - 1] == "*") {
+        return 1; // it's a pointer!
+    } else if(ctx.types[type]) {
+        return ctx.types[type].length; // it's a user defined type
+                                      // which is either a typedef, a union, or a struct
+                                      // either way, this should work OK
+    } else {
+        console.log("Unknown type sized: "+type);
+    }
+
+    return 1;
+}
+
+// fixme: stub
 function formatValue(ctx, type, value) {
     if(typeof value == "object") {
         if(value.type == "getelementptr") {
@@ -426,6 +464,11 @@ function stackPosFromOffset(offset, otherOffset) {
 
 // higher-level code generation
 
+function _allocateLocal(ctx, n) {
+    if(ctx.scoped) ctx.scopeToFree += n;
+    else           ctx.globalToFree += n;
+}
+
 function allocateLocal(ctx, val, name, type, skipCleanup) {
     if(name) {
         var depth = 0;
@@ -440,11 +483,7 @@ function allocateLocal(ctx, val, name, type, skipCleanup) {
         ctx.localTypes[name] = type;
     }
 
-    if(ctx.scoped) {
-        ctx.scopeToFree++;
-    } else {
-        ctx.globalToFree++;
-    }
+    _allocateLocal(ctx, 1);
 
     var out = [
         ["setLine:ofList:to:", stackPtr(), "DATA", val],
