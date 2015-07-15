@@ -51,6 +51,7 @@ function parse(file, ffi) {
     file = file.replace(/ nuw/g, "");
     file = file.replace(/ nocapture/g, "");
     file = file.replace(/ readonly/g, "");
+    file = file.replace(/, !tbaa !(\d)+/g, "");
 
     var lines = file.split('\n');
 
