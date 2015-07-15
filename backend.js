@@ -639,7 +639,7 @@ function dereferenceAndSet(ctx, ptr, content) {
             ]
         ];
     } else {
-        console.log("Unkown dereferenced variable start: "+n);
+        console.log("Unkown dereferenced variable start: "+ptr);
     }
 
 }
