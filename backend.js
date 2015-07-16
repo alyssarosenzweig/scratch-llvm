@@ -408,7 +408,6 @@ function formatValue(ctx, type, value) {
     if(typeof value == "object") {
         if(value.type == "getelementptr") {
             // fixme: necessary and proper implementation
-            console.log(value);
             return addressOf(ctx, value.base.val, value.offset);
         }
     }
@@ -582,11 +581,6 @@ function fetchByName(ctx, n, expectedType) {
 function addressOf(ctx, n, offset) {
     // TODO: full implementation
     // this will work for now, anyway
-    if(n == "%world") {
-        console.log("Offset 1: " + getOffset(ctx, n));
-        console.log("With extra: "+stackPosFromOffset(getOffset(ctx, n), offset));
-        console.log("addressOf %world " + offset);
-    }
 
     // first, we need to get the address of the base pointer
     // this will either be a standard stack-based pointer, or a reference to rootGlobal
