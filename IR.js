@@ -21,7 +21,7 @@ var regexs = {
     srem: /^srem ([^ ]+) ([^,]+), (.+)/,
     icmp: /^icmp ([^ ]+) ([^ ]+) ([^,]+), (.+)/,
     sext: /^sext i(\d+) ([^ ]+) to i(\d+)/,
-    getelementptr: /^getelementptr (inbounds )?(\[([^ \]]+))?([^ ]+) ([^,]+), ([^ ]+) (.+)/,
+    getelementptr: /^getelementptr (inbounds )?((\[([^ \]]+))|([^ ]+)) ([^,]+), ([^ ]+) ([^,]+), ([^ ]+) (.+)/,
     ashr: /^ashr ([^ ]+) ([^,]+), (.+)/,
     and: /^and ([^ ]+) ([^,]+), (.+)/,
     trunc: /^trunc ([^ ]+) ([^ ]+) to (.+)/,
@@ -324,12 +324,13 @@ function parse(file, ffi) {
                    functionBlock.code.push(block);
                 } else if(regexs.getelementptr.test(m[2])) {
                     console.log("getelementptr todo");
-                    console.log(m);
 
                     var m = m[2].match(regexs.getelementptr);
 
+                    console.log(m);
                     block.val = matchGetElementPtr(m);
 
+                    console.log(block.val);
                     functionBlock.code.push(block);
                 } else if(regexs.ashr.test(m[2])) {
                     var m = m[2].match(regexs.ashr);
@@ -567,9 +568,9 @@ function matchGetElementPtr(m) {
     return {
         type: "addressOf",
         base: {
-            name: m[4],
+            name: m[6],
         },
-        offset: m[6],
-        vtype: m[7]
+        offset: m[10],
+        vtype: m[2]
     }
 }

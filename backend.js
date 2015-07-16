@@ -106,6 +106,8 @@ module.exports.compileFunction = function(func, IR) {
                     if(size != 1) {
                         ignored -= size;
                     }
+
+                    func.code[i+j].val.value = stackPtr(); 
                 } 
 
                 if(func.code[i+j].val.type == "phi") {
@@ -190,7 +192,7 @@ function compileInstruction(ctx, block, final) {
         // load the code from the options
         return module.exports.ffi[block.ffiBlock];
     } else if(block.type == "set") {
-        var val = 0;
+        var val = block.val.value || 0;
         if(!block.val.vtype) console.log(block.val);
         var type = block.val.vtype || "";
         
@@ -406,6 +408,7 @@ function formatValue(ctx, type, value) {
     if(typeof value == "object") {
         if(value.type == "getelementptr") {
             // fixme: necessary and proper implementation
+            console.log(value);
             return addressOf(ctx, value.base.val, value.offset);
         }
     }
