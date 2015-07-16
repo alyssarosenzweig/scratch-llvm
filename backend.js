@@ -432,8 +432,8 @@ function stackPtr() {
 }
 
 function stackPosFromOffset(offset, otherOffset) {
-    var rOffset = offset + (otherOffset || 0);
-    
+    var rOffset = (offset * 1) + ((otherOffset || 0)*1);
+ 
     // optimize zero-index
     if(rOffset == 0)
         return stackPtr();
@@ -582,21 +582,29 @@ function fetchByName(ctx, n, expectedType) {
 function addressOf(ctx, n, offset) {
     // TODO: full implementation
     // this will work for now, anyway
+    if(n == "%world") {
+        console.log("Offset 1: " + getOffset(ctx, n));
+        console.log("With extra: "+stackPosFromOffset(getOffset(ctx, n), offset));
+        console.log("addressOf %world " + offset);
+    }
 
     // first, we need to get the address of the base pointer
     // this will either be a standard stack-based pointer, or a reference to rootGlobal
 
     var base = 0;
 
-    if(ctx.rootGlobal[n.slice(1)])
+    if(n[0] == "@" && ctx.rootGlobal[n.slice(1)] !== undefined)
         base = ctx.rootGlobal[n.slice(1)].ptr;
-    else if(ctx.locals[n]) {
+    else if(ctx.locals[n] !== undefined) {
         base = ["getLine:ofList:", stackPosFromOffset(getOffset(ctx, n), offset), "DATA"];
         offset = 0;
         
         // as an optimization, we let the above functions do the underlying math,
         // as they have more context than we do,
         // so they're able to safely perform more aggresive optimizations
+    } else {
+        console.log("Ahhh! Can't find the base "+n);
+        console.log(ctx.locals);
     }
 
     // then, we add the offset
