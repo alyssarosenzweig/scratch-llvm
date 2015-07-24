@@ -100,15 +100,12 @@ module.exports.compileFunction = function(func, IR) {
                     // we basically need to implement alloca here completely
                     // because optimizations yall
                     
-                    ignored++;
-
                     var size = sizeForType(functionContext, func.code[i+j].val.vtype.slice(0, -1));
-                    if(size != 1) {
-                        ignored -= size;
-                    }
+                    ignored -= size;
 
-                    func.code[i+j].val.value = stackPtr(); 
-                } 
+                    var b = 1 - size;
+                    func.code[i+j].val.value = [b >= 0 ? "+" : "-", stackPtr(), Math.abs(b)]; 
+                }
 
                 if(func.code[i+j].val.type == "phi") {
                     ignored++;
@@ -431,7 +428,7 @@ function stackPtr() {
 }
 
 function stackPosFromOffset(offset, otherOffset) {
-    var rOffset = (offset * 1) + ((otherOffset || 0)*1);
+    var rOffset = (offset * 1) - ((otherOffset*1) || 0);
  
     // optimize zero-index
     if(rOffset == 0)
@@ -590,7 +587,8 @@ function addressOf(ctx, n, offset) {
     if(n[0] == "@" && ctx.rootGlobal[n.slice(1)] !== undefined)
         base = ctx.rootGlobal[n.slice(1)].ptr;
     else if(ctx.locals[n] !== undefined) {
-        base = ["getLine:ofList:", stackPosFromOffset(getOffset(ctx, n), offset), "DATA"];
+        console.log("%"+n+" " + offset);
+        base = stackPosFromOffset(getOffset(ctx, n), offset);
         offset = 0;
         
         // as an optimization, we let the above functions do the underlying math,
@@ -677,7 +675,9 @@ function dereferenceAndSet(ctx, ptr, content) {
         return [
             [
                 "setLine:ofList:to:",
-                stackPosFromOffset(getOffset(ctx, ptr)),
+                ["getLine:ofList:",
+                    stackPosFromOffset(getOffset(ctx, ptr)),
+                    "DATA"],
                 "DATA",
                 fetchByName(ctx, content)
             ]
