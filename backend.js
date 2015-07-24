@@ -588,8 +588,8 @@ function addressOf(ctx, n, offset) {
         base = ctx.rootGlobal[n.slice(1)].ptr;
     else if(ctx.locals[n] !== undefined) {
         console.log("%"+n+" " + offset);
-        base = stackPosFromOffset(getOffset(ctx, n), offset);
-        offset = 0;
+        base = ["getLine:ofList:", stackPosFromOffset(getOffset(ctx, n)), "DATA"];
+        //offset = 0;
         
         // as an optimization, we let the above functions do the underlying math,
         // as they have more context than we do,
