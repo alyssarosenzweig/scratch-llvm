@@ -72,7 +72,7 @@ Meow.prototype.upload = function(projectID, version, csrf, sessionsid) {
 }
 
 Meow.prototype.addScript = function(blocks) {
-	this.scripts.push(new ScriptTuple(blocks, this.scripts.length * 250, 0));
+	this.scripts.push(new ScriptTuple(blocks, this.scripts.length * 950, 0));
 }
 
 Meow.prototype.addList = function(name) {

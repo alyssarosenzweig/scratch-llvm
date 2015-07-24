@@ -46,7 +46,8 @@ module.exports.compileFunction = function(func, IR) {
         globals: IR.globals,
         rootGlobal: IR.rootGlobal,
         phiAssignments: {},
-        phiNodes: {}
+        phiNodes: {},
+        types: IR.types
     }
 
     var blockList = [module.exports.generateFunctionHat(functionContext, func)];
@@ -94,7 +95,17 @@ module.exports.compileFunction = function(func, IR) {
             while(func.code[i+j].type == "set"
                   && !(func.code[i+j].val.type == "comparison"
                        && func.code[i+j+1].type == "branch")) {
-                
+               
+                if(func.code[i+j].val.type == "alloca") {
+                    // we basically need to implement alloca here completely
+                    // because optimizations yall
+                    
+                    var size = sizeForType(functionContext, func.code[i+j].val.vtype.slice(0, -1));
+                    ignored -= size;
+
+                    var b = 1 - size;
+                    func.code[i+j].val.value = [b >= 0 ? "+" : "-", stackPtr(), Math.abs(b)]; 
+                }
 
                 if(func.code[i+j].val.type == "phi") {
                     ignored++;
@@ -178,7 +189,7 @@ function compileInstruction(ctx, block, final) {
         // load the code from the options
         return module.exports.ffi[block.ffiBlock];
     } else if(block.type == "set") {
-        var val = 0;
+        var val = block.val.value || 0;
         if(!block.val.vtype) console.log(block.val);
         var type = block.val.vtype || "";
         
@@ -187,8 +198,20 @@ function compileInstruction(ctx, block, final) {
         if(block.val.type == "return value") {
             val = ["readVariable", "return value"];
         } else if(block.val.type == "variable") {
-            val = fetchByName(ctx, block.val.name, block.val.vtype);
+            val = [
+                    "getLine:ofList:",
+                    fetchByName(ctx, block.val.name, block.val.vtype.split("*")[0]+"*"),
+                    "DATA"];
             type = block.val.vtype;
+        } else if(block.val.type == "alloca") {
+            // we may not need to anything for alloca
+            // in fact, in many cases we're only allocating one element
+           
+            var size = sizeForType(ctx, block.val.vtype.slice(0, -1)); // not a pointer here
+            if(size != 1) {
+                // if it's worth more, we need to allocate more
+                _allocateLocal(ctx, size - 1);
+            } 
         } else if(block.val.type == "arithmetic") {
             val = [block.val.operation, fetchByName(ctx, block.val.operand1), fetchByName(ctx, block.val.operand2)];
         } else if(block.val.type == "comparison") {
@@ -364,6 +387,23 @@ function specifierForType(type) {
 }
 
 // fixme: stub
+function sizeForType(ctx, type) {
+    if(type[0] == "i") {
+        return 1; // single element is standard :)
+    } else if(type[type.length - 1] == "*") {
+        return 1; // it's a pointer!
+    } else if(ctx.types[type]) {
+        return ctx.types[type].length; // it's a user defined type
+                                      // which is either a typedef, a union, or a struct
+                                      // either way, this should work OK
+    } else {
+        console.log("Unknown type sized: "+type);
+    }
+
+    return 1;
+}
+
+// fixme: stub
 function formatValue(ctx, type, value) {
     if(typeof value == "object") {
         if(value.type == "getelementptr") {
@@ -391,8 +431,8 @@ function stackPtr() {
 }
 
 function stackPosFromOffset(offset, otherOffset) {
-    var rOffset = offset + (otherOffset || 0);
-    
+    var rOffset = (offset * 1) - ((otherOffset*1) || 0);
+ 
     // optimize zero-index
     if(rOffset == 0)
         return stackPtr();
@@ -426,6 +466,11 @@ function stackPosFromOffset(offset, otherOffset) {
 
 // higher-level code generation
 
+function _allocateLocal(ctx, n) {
+    if(ctx.scoped) ctx.scopeToFree += n;
+    else           ctx.globalToFree += n;
+}
+
 function allocateLocal(ctx, val, name, type, skipCleanup) {
     if(name) {
         var depth = 0;
@@ -440,11 +485,7 @@ function allocateLocal(ctx, val, name, type, skipCleanup) {
         ctx.localTypes[name] = type;
     }
 
-    if(ctx.scoped) {
-        ctx.scopeToFree++;
-    } else {
-        ctx.globalToFree++;
-    }
+    _allocateLocal(ctx, 1);
 
     var out = [
         ["setLine:ofList:to:", stackPtr(), "DATA", val],
@@ -546,15 +587,19 @@ function addressOf(ctx, n, offset) {
 
     var base = 0;
 
-    if(ctx.rootGlobal[n.slice(1)])
+    if(n[0] == "@" && ctx.rootGlobal[n.slice(1)] !== undefined)
         base = ctx.rootGlobal[n.slice(1)].ptr;
-    else if(ctx.locals[n]) {
-        base = ["getLine:ofList:", stackPosFromOffset(getOffset(ctx, n), offset), "DATA"];
-        offset = 0;
+    else if(ctx.locals[n] !== undefined) {
+        console.log("%"+n+" " + offset);
+        base = ["getLine:ofList:", stackPosFromOffset(getOffset(ctx, n)), "DATA"];
+        //offset = 0;
         
         // as an optimization, we let the above functions do the underlying math,
         // as they have more context than we do,
         // so they're able to safely perform more aggresive optimizations
+    } else {
+        console.log("Ahhh! Can't find the base "+n);
+        console.log(ctx.locals);
     }
 
     // then, we add the offset
@@ -626,20 +671,22 @@ function dereferenceAndSet(ctx, ptr, content) {
                 "setLine:ofList:to:",
                 ctx.rootGlobal[ptr.slice(1)].ptr,
                 "DATA",
-                fetchByName(ctx, content)
+                formatValue(ctx, null, content)
             ]
         ];
     } else if(ptr[0] == "%") {
         return [
             [
                 "setLine:ofList:to:",
-                stackPosFromOffset(getOffset(ctx, ptr)),
+                ["getLine:ofList:",
+                    stackPosFromOffset(getOffset(ctx, ptr)),
+                    "DATA"],
                 "DATA",
-                fetchByName(ctx, content)
+                formatValue(ctx, null, content)
             ]
         ];
     } else {
-        console.log("Unkown dereferenced variable start: "+n);
+        console.log("Unkown dereferenced variable start: "+ptr);
     }
 
 }

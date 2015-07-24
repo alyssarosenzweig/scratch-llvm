@@ -5,6 +5,7 @@ var fs = require('fs');
 var regexs = {
     define: /^define ([^ ]+) ([^\(]+)\(([^\)]*)\)([^{]+){/,
     declare: /^declare ([^ ]+) ([^\(]+)\(([^\)]*)\)/,
+    newType: /^([^ ]+) = type \{([^\}]+)\}$/,
 
     call: /^\s*(tail )?call ([^@]+) ([^\(]+)\((.+)/,
     ret: /^\s*ret (.+)/,
@@ -20,7 +21,7 @@ var regexs = {
     srem: /^srem ([^ ]+) ([^,]+), (.+)/,
     icmp: /^icmp ([^ ]+) ([^ ]+) ([^,]+), (.+)/,
     sext: /^sext i(\d+) ([^ ]+) to i(\d+)/,
-    getelementptr: /^getelementptr (inbounds )?(\[([^ \]]+))?([^ ]+) ([^,]+), ([^ ]+) (.+)/,
+    getelementptr: /^getelementptr (inbounds )?((\[([^ \]]+))|([^ ]+)) ([^,]+), ([^ ]+) ([^,]+), ([^ ]+) (.+)/,
     ashr: /^ashr ([^ ]+) ([^,]+), (.+)/,
     and: /^and ([^ ]+) ([^,]+), (.+)/,
     trunc: /^trunc ([^ ]+) ([^ ]+) to (.+)/,
@@ -51,12 +52,14 @@ function parse(file, ffi) {
     file = file.replace(/ nuw/g, "");
     file = file.replace(/ nocapture/g, "");
     file = file.replace(/ readonly/g, "");
+    file = file.replace(/, !tbaa !(\d)+/g, "");
 
     var lines = file.split('\n');
 
     var mod = {
         functions: [],
-        globals: []
+        globals: [],
+        types: []
     };
 
     var inFunctionBlock = false;
@@ -134,6 +137,15 @@ function parse(file, ffi) {
                     type: type,
                     val: val
                 });
+            } else if(regexs.newType.test(lines[i])) {
+                var m = lines[i].match(regexs.newType);
+                
+                var newType = m[1];
+                var contents = m[2].split(",").map(function(a) {
+                    return a.trim();
+                });
+
+                mod.types[newType] = contents;
             }
         } else {
             if(lines[i] == "}") {
@@ -174,7 +186,8 @@ function parse(file, ffi) {
                     var m = m[2].match(regexs.alloca);
 
                     block.val = {
-                        vtype: m[1]+"*"
+                        vtype: m[1]+"*",
+                        type: "alloca"
                     }
 
                     functionBlock.code.push(block);
@@ -311,12 +324,13 @@ function parse(file, ffi) {
                    functionBlock.code.push(block);
                 } else if(regexs.getelementptr.test(m[2])) {
                     console.log("getelementptr todo");
-                    console.log(m);
 
                     var m = m[2].match(regexs.getelementptr);
 
+                    console.log(m);
                     block.val = matchGetElementPtr(m);
 
+                    console.log(block.val);
                     functionBlock.code.push(block);
                 } else if(regexs.ashr.test(m[2])) {
                     var m = m[2].match(regexs.ashr);
@@ -351,8 +365,19 @@ function parse(file, ffi) {
                     type: "ret",
                     value: extractTypeValue(lines[i].match(regexs.ret)[1])
                 });
-            } else if(regexs.store.test(lines[i])) {
-                var m = lines[i].match(regexs.store);
+            } else if(lines[i].trim().split(" ")[0] == "store") {
+                var snippet = lines[i].split(/\(([^\)]+)\)/g);
+                
+                var ln = lines[i];
+                if(snippet.length > 1)
+                    var ln = lines[i].replace(snippet[1], "*snip*");
+                
+                var m = ln.match(regexs.store);
+
+                if(snippet.length > 1) {
+                    m[2] = m[2].replace("*snip*", snippet[1]);
+                    m[2] = formatValue(m[1], m[2]);
+                }
 
                 functionBlock.code.push({
                     type: "store",
@@ -364,7 +389,7 @@ function parse(file, ffi) {
                         type: m[3],
                         value: m[4]
                     }
-                })
+                });
 
             } else if(regexs.absoluteBranch.test(lines[i])) {
                 var label = lines[i].match(regexs.absoluteBranch)[1];
@@ -554,9 +579,9 @@ function matchGetElementPtr(m) {
     return {
         type: "addressOf",
         base: {
-            name: m[4],
+            name: m[6],
         },
-        offset: m[6],
-        vtype: m[7]
+        offset: m[10],
+        vtype: m[2]
     }
 }
