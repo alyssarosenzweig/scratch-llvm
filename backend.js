@@ -200,7 +200,7 @@ function compileInstruction(ctx, block, final) {
         } else if(block.val.type == "variable") {
             val = [
                     "getLine:ofList:",
-                    fetchByName(ctx, block.val.name, block.val.vtype),
+                    fetchByName(ctx, block.val.name, block.val.vtype.split("*")[0]+"*"),
                     "DATA"];
             type = block.val.vtype;
         } else if(block.val.type == "alloca") {
