@@ -198,7 +198,10 @@ function compileInstruction(ctx, block, final) {
         if(block.val.type == "return value") {
             val = ["readVariable", "return value"];
         } else if(block.val.type == "variable") {
-            val = fetchByName(ctx, block.val.name, block.val.vtype);
+            val = [
+                    "getLine:ofList:",
+                    fetchByName(ctx, block.val.name, block.val.vtype),
+                    "DATA"];
             type = block.val.vtype;
         } else if(block.val.type == "alloca") {
             // we may not need to anything for alloca
