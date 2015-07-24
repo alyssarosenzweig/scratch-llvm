@@ -14,6 +14,7 @@ void main() {
     world.j = 66;
     world.nextNode = &world;
     world.someText = "Hello, World!";
+    world.nextNode->i = 'Z';
 
     putchar(world.i); // A
     putchar(world.j); // B
