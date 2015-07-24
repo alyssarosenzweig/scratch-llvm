@@ -365,8 +365,17 @@ function parse(file, ffi) {
                     type: "ret",
                     value: extractTypeValue(lines[i].match(regexs.ret)[1])
                 });
-            } else if(regexs.store.test(lines[i])) {
-                var m = lines[i].match(regexs.store);
+            } else if(lines[i].trim().split(" ")[0] == "store") {
+                var snippet = lines[i].split(/\(([^\)]+)\)/g);
+                
+                var ln = lines[i];
+                if(snippet.length > 1)
+                    var ln = lines[i].replace(snippet[1], "*snip*");
+                
+                var m = ln.match(regexs.store);
+
+                if(snippet.length > 1) 
+                    m[2] = m[2].replace("*snip*", snippet[1]);
 
                 functionBlock.code.push({
                     type: "store",
@@ -378,7 +387,7 @@ function parse(file, ffi) {
                         type: m[3],
                         value: m[4]
                     }
-                })
+                });
 
             } else if(regexs.absoluteBranch.test(lines[i])) {
                 var label = lines[i].match(regexs.absoluteBranch)[1];
