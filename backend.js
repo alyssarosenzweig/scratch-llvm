@@ -668,7 +668,7 @@ function dereferenceAndSet(ctx, ptr, content) {
                 "setLine:ofList:to:",
                 ctx.rootGlobal[ptr.slice(1)].ptr,
                 "DATA",
-                fetchByName(ctx, content)
+                formatValue(ctx, null, content)
             ]
         ];
     } else if(ptr[0] == "%") {
@@ -679,7 +679,7 @@ function dereferenceAndSet(ctx, ptr, content) {
                     stackPosFromOffset(getOffset(ctx, ptr)),
                     "DATA"],
                 "DATA",
-                fetchByName(ctx, content)
+                formatValue(ctx, null, content)
             ]
         ];
     } else {

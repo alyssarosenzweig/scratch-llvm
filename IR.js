@@ -374,8 +374,10 @@ function parse(file, ffi) {
                 
                 var m = ln.match(regexs.store);
 
-                if(snippet.length > 1) 
+                if(snippet.length > 1) {
                     m[2] = m[2].replace("*snip*", snippet[1]);
+                    m[2] = formatValue(m[1], m[2]);
+                }
 
                 functionBlock.code.push({
                     type: "store",
