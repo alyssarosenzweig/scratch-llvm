@@ -45,32 +45,6 @@ Meow.prototype.serialize = function() {
 		};
 }
 
-Meow.prototype.upload = function(projectID, version, csrf, sessionsid) {
-	var data = JSON.stringify(this.serialize());
-
-	var options = {
-		host: 'projects.scratch.mit.edu',
-		port: '80',
-		path: '/internalapi/project/'+projectID+'/set/?v='+version+'&_rnd='+Math.random(),
-		method: 'POST',
-		headers: {
-			'Content-Type': 'application/json',
-			'Content-Length': data.length,
-			'X-Csrftoken': csrf,
-			'Cookie': 'scratchcsrftoken='+csrf+'; scratchsessionsid='+sessionsid
-		}
-	};
-
-	var req = http.request(options, function(res) {
-		res.on('data', function(d) {
-			console.log(d.toString());
-		})
-	})
-
-	req.write(data);
-	req.end();
-}
-
 Meow.prototype.addScript = function(blocks) {
 	this.scripts.push(new ScriptTuple(blocks, this.scripts.length * 950, 0));
 }
