@@ -12,8 +12,7 @@ import argparse
 
 parser = argparse.ArgumentParser(description='Frontend to meowcc')
 parser.add_argument("--output", "-o", help="output file")
-parser.add_argument("--csrf", help="CSRF token extracted from Scratch website")
-parser.add_argument("--session", help="Session ID extracted from Scratch website")
+parser.add_argument("--username", help="Scratch username")
 parser.add_argument("--project", "-pid", help="Project ID to upload to")
 parser.add_argument("--compile", "-c", help="Skip linking step", action='store_true')
 
@@ -74,6 +73,6 @@ meowcc = sys.argv[0][0:-len("scratchcc.py")] + "meowcc.js"
 if args.output:
     subprocess.call("node " + meowcc + " "+inputFile+" > "+args.output, shell=True)    
 elif args.project:
-    subprocess.call("node " + meowcc + " "+inputFile+" "+args.project+" "+args.csrf+" "+args.session, shell=True)
+    subprocess.call("node " + meowcc + " "+inputFile+" "+args.username+" "+args.project, shell=True)
 else:
     subprocess.call("node " + meow + " " +inputFile, shell=True)
