@@ -134,8 +134,25 @@ meow.addScript([
         ["call", "@main"] // TODO: argc + argv
     ])
 
-if(process.argv[3]) {
-    meow.upload(process.argv[3], 'v426', process.argv[4], process.argv[5]);
+if(process.argv.length === 5) {
+    var data = meow.serialize();
+
+    var prompt = require('prompt');
+    prompt.start();
+    prompt.get({
+        properties: {
+            password: {
+                hidden: true
+            }
+        }
+    }, function(err, result) {
+        require('scratch-api').createUserSession(process.argv[3], result.password, function(err, user) {
+            if (err) return console.error(err);
+            user.setProject(process.argv[4], data, function(err) {
+                if (err) return console.error(err);
+            });
+        })
+    });
 } else {
     console.log(JSON.stringify(meow.serialize()));
 }

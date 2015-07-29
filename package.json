@@ -1,0 +1,27 @@
+{
+  "name": "scratch-llvm",
+  "version": "1.0.0",
+  "description": "Cross-compiling LLVM into MIT Scratch, because it's interesting.",
+  "main": "meowcc.js",
+  "directories": {
+    "test": "tests"
+  },
+  "dependencies": {
+    "prompt": "^0.2.14",
+    "scratch-api": "^1.0.3"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bobbybee/scratch-llvm.git"
+  },
+  "author": "bobbybee",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/bobbybee/scratch-llvm/issues"
+  },
+  "homepage": "https://github.com/bobbybee/scratch-llvm#readme"
+}
